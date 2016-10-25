@@ -2,8 +2,9 @@ package com.bignerdranch.expandablerecyclerview.model;
 
 import android.support.annotation.NonNull;
 
-import java.util.ArrayList;
-import java.util.List;
+import io.realm.RealmList;
+import io.realm.RealmModel;
+import io.realm.RealmObject;
 
 /**
  * Wrapper used to link metadata with a list item.
@@ -11,14 +12,14 @@ import java.util.List;
  * @param <P> Parent list item
  * @param <C> Child list item
  */
-public class ExpandableWrapper<P extends Parent<C>, C> {
+public class ExpandableWrapper<P extends Parent<C>, C extends RealmObject> implements RealmModel {
 
     private P mParent;
     private C mChild;
     private boolean mWrappedParent;
     private boolean mExpanded;
 
-    private List<ExpandableWrapper<P, C>> mWrappedChildList;
+    private RealmList<ExpandableWrapper<P, C>> mWrappedChildList;
 
     /**
      * Constructor to wrap a parent object of type {@link P}.
@@ -85,7 +86,7 @@ public class ExpandableWrapper<P extends Parent<C>, C> {
      * @return The list of children of a parent
      * @throws IllegalStateException If a parent isn't being wrapped
      */
-    public List<ExpandableWrapper<P, C>> getWrappedChildList() {
+    public RealmList<ExpandableWrapper<P, C>> getWrappedChildList() {
         if (!mWrappedParent) {
             throw new IllegalStateException("Parent not wrapped");
         }
@@ -93,8 +94,8 @@ public class ExpandableWrapper<P extends Parent<C>, C> {
         return mWrappedChildList;
     }
 
-    private List<ExpandableWrapper<P, C>> generateChildItemList(P parentListItem) {
-        List<ExpandableWrapper<P, C>> childItemList = new ArrayList<>();
+    private RealmList<ExpandableWrapper<P, C>> generateChildItemList(P parentListItem) {
+        RealmList<ExpandableWrapper<P, C>> childItemList = new RealmList<>();
 
         for (C child : parentListItem.getChildList()) {
             childItemList.add(new ExpandableWrapper<P, C>(child));

@@ -1,6 +1,7 @@
 package com.bignerdranch.expandablerecyclerview;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -17,6 +18,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.realm.OrderedRealmCollection;
+import io.realm.RealmList;
+import io.realm.RealmObject;
+import io.realm.RealmRecyclerViewAdapter;
+
 /**
  * RecyclerView.Adapter implementation that
  * adds the ability to expand and collapse list items.
@@ -32,10 +38,10 @@ import java.util.Map;
  * methods and not the notify methods of RecyclerView.Adapter.
  *
  */
-public abstract class ExpandableRecyclerAdapter<P extends Parent<C>, C, PVH extends ParentViewHolder, CVH extends ChildViewHolder>
-        extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public abstract class RealmExpandableRecyclerAdapter<P extends Parent<C>, C extends RealmObject, PVH extends ParentViewHolder, CVH extends ChildViewHolder>
+        extends RealmRecyclerViewAdapter<P, RecyclerView.ViewHolder> {
 
-    private static final String EXPANDED_STATE_MAP = "ExpandableRecyclerAdapter.ExpandedStateMap";
+    private static final String EXPANDED_STATE_MAP = "RealmExpandableRecyclerAdapter.ExpandedStateMap";
     /**
      * Default ViewType for parent rows
      */
@@ -53,13 +59,10 @@ public abstract class ExpandableRecyclerAdapter<P extends Parent<C>, C, PVH exte
     /**
      * A {@link List} of all currently expanded parents and their children, in order.
      * Changes to this list should be made through the add/remove methods
-     * available in {@link ExpandableRecyclerAdapter}.
+     * available in {@link RealmExpandableRecyclerAdapter}.
      */
     @NonNull
-    protected List<ExpandableWrapper<P, C>> mFlatItemList;
-
-    @NonNull
-    private List<P> mParentList;
+    protected RealmList<ExpandableWrapper<P, C>> mFlatItemList;
 
     @Nullable
     private ExpandCollapseListener mExpandCollapseListener;
@@ -99,9 +102,9 @@ public abstract class ExpandableRecyclerAdapter<P extends Parent<C>, C, PVH exte
     }
 
     /**
-     * Primary constructor. Sets up {@link #mParentList} and {@link #mFlatItemList}.
+     * Primary constructor. Sets up parentList {@link #getData()} and {@link #mFlatItemList}.
      * <p>
-     * Any changes to {@link #mParentList} should be made on the original instance, and notified via
+     * Any changes to {@link #getData()} should be made on the original instance, and notified via
      * {@link #notifyParentInserted(int)}
      * {@link #notifyParentRemoved(int)}
      * {@link #notifyParentChanged(int)}
@@ -114,12 +117,11 @@ public abstract class ExpandableRecyclerAdapter<P extends Parent<C>, C, PVH exte
      * @param parentList List of all parents to be displayed in the RecyclerView that this
      *                       adapter is linked to
      */
-    public ExpandableRecyclerAdapter(@NonNull List<P> parentList) {
-        super();
-        mParentList = parentList;
+    public RealmExpandableRecyclerAdapter(@NonNull Context context, @Nullable OrderedRealmCollection<P> parentList) {
+        super(context, parentList, true);
         mFlatItemList = generateFlattenedParentChildList(parentList);
         mAttachedRecyclerViewPool = new ArrayList<>();
-        mExpansionStateMap = new HashMap<>(mParentList.size());
+        mExpansionStateMap = new HashMap<>(getItemCount());
     }
 
     /**
@@ -155,7 +157,7 @@ public abstract class ExpandableRecyclerAdapter<P extends Parent<C>, C, PVH exte
      * that determines if the list item is a parent or a child and calls through
      * to the appropriate implementation of either
      * {@link #onBindParentViewHolder(ParentViewHolder, int, Parent)} or
-     * {@link #onBindChildViewHolder(ChildViewHolder, int, int, Object)}.
+     * {@link #onBindChildViewHolder(ChildViewHolder, int, int, RealmObject)}.
      *
      * @param holder The RecyclerView.ViewHolder to bind data to
      * @param flatPosition The index in the merged list of children and parents at which to bind
@@ -334,10 +336,10 @@ public abstract class ExpandableRecyclerAdapter<P extends Parent<C>, C, PVH exte
      *
      * @return The list of parents that this adapter represents
      */
-    @NonNull
+    @Nullable
     @UiThread
-    public List<P> getParentList() {
-        return mParentList;
+    public OrderedRealmCollection<P> getParentList() {
+        return getData();
     }
 
     /**
@@ -368,17 +370,17 @@ public abstract class ExpandableRecyclerAdapter<P extends Parent<C>, C, PVH exte
      *
      */
     @UiThread
-    public void setParentList(@NonNull List<P> parentList, boolean preserveExpansionState) {
-        mParentList = parentList;
+    public void setParentList(@Nullable OrderedRealmCollection<P> parentList, boolean preserveExpansionState) {
+        updateData(parentList);
         notifyParentDataSetChanged(preserveExpansionState);
     }
 
     /**
      * Implementation of Adapter#onAttachedToRecyclerView(RecyclerView).
      * <p>
-     * Called when this {@link ExpandableRecyclerAdapter} is attached to a RecyclerView.
+     * Called when this {@link RealmExpandableRecyclerAdapter} is attached to a RecyclerView.
      *
-     * @param recyclerView The {@code RecyclerView} this {@code ExpandableRecyclerAdapter}
+     * @param recyclerView The {@code RecyclerView} this {@code RealmExpandableRecyclerAdapter}
      *                     is being attached to
      */
     @Override
@@ -392,9 +394,9 @@ public abstract class ExpandableRecyclerAdapter<P extends Parent<C>, C, PVH exte
     /**
      * Implementation of Adapter.onDetachedFromRecyclerView(RecyclerView)
      * <p>
-     * Called when this ExpandableRecyclerAdapter is detached from a RecyclerView.
+     * Called when this RealmExpandableRecyclerAdapter is detached from a RecyclerView.
      *
-     * @param recyclerView The {@code RecyclerView} this {@code ExpandableRecyclerAdapter}
+     * @param recyclerView The {@code RecyclerView} this {@code RealmExpandableRecyclerAdapter}
      *                     is being detached from
      */
     @Override
@@ -485,7 +487,7 @@ public abstract class ExpandableRecyclerAdapter<P extends Parent<C>, C, PVH exte
      */
     @UiThread
     public void expandParent(int parentPosition) {
-        expandParent(mParentList.get(parentPosition));
+        expandParent(getItem(parentPosition));
     }
 
     /**
@@ -507,7 +509,8 @@ public abstract class ExpandableRecyclerAdapter<P extends Parent<C>, C, PVH exte
      */
     @UiThread
     public void expandAllParents() {
-        for (P parent : mParentList) {
+        if (getData() == null) return;
+        for (P parent : getData()) {
             expandParent(parent);
         }
     }
@@ -535,7 +538,7 @@ public abstract class ExpandableRecyclerAdapter<P extends Parent<C>, C, PVH exte
      */
     @UiThread
     public void collapseParent(int parentPosition) {
-        collapseParent(mParentList.get(parentPosition));
+        collapseParent(getItem(parentPosition));
     }
 
     /**
@@ -557,7 +560,8 @@ public abstract class ExpandableRecyclerAdapter<P extends Parent<C>, C, PVH exte
      */
     @UiThread
     public void collapseAllParents() {
-        for (P parent : mParentList) {
+        if (getData() == null) return;
+        for (P parent : getData()) {
             collapseParent(parent);
         }
     }
@@ -567,7 +571,7 @@ public abstract class ExpandableRecyclerAdapter<P extends Parent<C>, C, PVH exte
      * <p>
      * Should be called from {@link Activity#onSaveInstanceState(Bundle)} in
      * the {@link Activity} that hosts the RecyclerView that this
-     * {@link ExpandableRecyclerAdapter} is attached to.
+     * {@link RealmExpandableRecyclerAdapter} is attached to.
      * <p>
      * This will make sure to add the expanded state map as an extra to the
      * instance state bundle to be used in {@link #onRestoreInstanceState(Bundle)}.
@@ -586,7 +590,7 @@ public abstract class ExpandableRecyclerAdapter<P extends Parent<C>, C, PVH exte
      * <p>
      * Should be called from {@link Activity#onRestoreInstanceState(Bundle)} in
      * the {@link Activity} that hosts the RecyclerView that this
-     * {@link ExpandableRecyclerAdapter} is attached to.
+     * {@link RealmExpandableRecyclerAdapter} is attached to.
      * <p>
      * Assumes that the list of parents is the same as when the saved
      * instance state was stored.
@@ -607,10 +611,10 @@ public abstract class ExpandableRecyclerAdapter<P extends Parent<C>, C, PVH exte
             return;
         }
 
-        List<ExpandableWrapper<P, C>> itemList = new ArrayList<>();
-        int parentsCount = mParentList.size();
+        RealmList<ExpandableWrapper<P, C>> itemList = new RealmList<>();
+        int parentsCount = getItemCount();
         for (int i = 0; i < parentsCount; i++) {
-            ExpandableWrapper<P, C> parentWrapper = new ExpandableWrapper<>(mParentList.get(i));
+            ExpandableWrapper<P, C> parentWrapper = new ExpandableWrapper<>(getItem(i));
             itemList.add(parentWrapper);
 
             if (expandedStateMap.containsKey(i)) {
@@ -828,9 +832,9 @@ public abstract class ExpandableRecyclerAdapter<P extends Parent<C>, C, PVH exte
     @UiThread
     public void notifyParentDataSetChanged(boolean preserveExpansionState) {
         if (preserveExpansionState) {
-            mFlatItemList = generateFlattenedParentChildList(mParentList, mExpansionStateMap);
+            mFlatItemList = generateFlattenedParentChildList(getData(), mExpansionStateMap);
         } else {
-            mFlatItemList = generateFlattenedParentChildList(mParentList);
+            mFlatItemList = generateFlattenedParentChildList(getData());
         }
         notifyDataSetChanged();
     }
@@ -851,10 +855,10 @@ public abstract class ExpandableRecyclerAdapter<P extends Parent<C>, C, PVH exte
      */
     @UiThread
     public void notifyParentInserted(int parentPosition) {
-        P parent = mParentList.get(parentPosition);
+        P parent = getItem(parentPosition);
 
         int flatParentPosition;
-        if (parentPosition < mParentList.size() - 1) {
+        if (parentPosition < getItemCount() - 1) {
             flatParentPosition = getFlatParentPosition(parentPosition);
         } else {
             flatParentPosition = mFlatItemList.size();
@@ -883,7 +887,7 @@ public abstract class ExpandableRecyclerAdapter<P extends Parent<C>, C, PVH exte
     @UiThread
     public void notifyParentRangeInserted(int parentPositionStart, int itemCount) {
         int initialFlatParentPosition;
-        if (parentPositionStart < mParentList.size() - itemCount) {
+        if (parentPositionStart < getItemCount() - itemCount) {
             initialFlatParentPosition = getFlatParentPosition(parentPositionStart);
         } else {
             initialFlatParentPosition = mFlatItemList.size();
@@ -894,7 +898,7 @@ public abstract class ExpandableRecyclerAdapter<P extends Parent<C>, C, PVH exte
         int changed;
         int parentPositionEnd = parentPositionStart + itemCount;
         for (int i = parentPositionStart; i < parentPositionEnd; i++) {
-            P parent = mParentList.get(i);
+            P parent = getItem(i);
             changed = addParentWrapper(flatParentPosition, parent);
             flatParentPosition += changed;
             sizeChanged += changed;
@@ -988,7 +992,7 @@ public abstract class ExpandableRecyclerAdapter<P extends Parent<C>, C, PVH exte
      */
     @UiThread
     public void notifyParentChanged(int parentPosition) {
-        P parent = mParentList.get(parentPosition);
+        P parent = getItem(parentPosition);
         int flatParentPositionStart = getFlatParentPosition(parentPosition);
         int sizeChanged = changeParentWrapper(flatParentPositionStart, parent);
 
@@ -1017,7 +1021,7 @@ public abstract class ExpandableRecyclerAdapter<P extends Parent<C>, C, PVH exte
         int changed;
         P parent;
         for (int j = 0; j < itemCount; j++) {
-            parent = mParentList.get(parentPositionStart);
+            parent = getItem(parentPositionStart);
             changed = changeParentWrapper(flatParentPosition, parent);
             sizeChanged += changed;
             flatParentPosition += changed;
@@ -1129,7 +1133,7 @@ public abstract class ExpandableRecyclerAdapter<P extends Parent<C>, C, PVH exte
         int flatParentPosition = getFlatParentPosition(parentPosition);
         ExpandableWrapper<P, C> parentWrapper = mFlatItemList.get(flatParentPosition);
 
-        parentWrapper.setParent(mParentList.get(parentPosition));
+        parentWrapper.setParent(getItem(parentPosition));
         if (parentWrapper.isExpanded()) {
             ExpandableWrapper<P, C> child = parentWrapper.getWrappedChildList().get(childPosition);
             mFlatItemList.add(flatParentPosition + childPosition + 1, child);
@@ -1159,7 +1163,7 @@ public abstract class ExpandableRecyclerAdapter<P extends Parent<C>, C, PVH exte
         int flatParentPosition = getFlatParentPosition(parentPosition);
         ExpandableWrapper<P, C> parentWrapper = mFlatItemList.get(flatParentPosition);
 
-        parentWrapper.setParent(mParentList.get(parentPosition));
+        parentWrapper.setParent(getItem(parentPosition));
         if (parentWrapper.isExpanded()) {
             List<ExpandableWrapper<P, C>> wrappedChildList = parentWrapper.getWrappedChildList();
             for (int i = 0; i < itemCount; i++) {
@@ -1189,7 +1193,7 @@ public abstract class ExpandableRecyclerAdapter<P extends Parent<C>, C, PVH exte
     public void notifyChildRemoved(int parentPosition, int childPosition) {
         int flatParentPosition = getFlatParentPosition(parentPosition);
         ExpandableWrapper<P, C> parentWrapper = mFlatItemList.get(flatParentPosition);
-        parentWrapper.setParent(mParentList.get(parentPosition));
+        parentWrapper.setParent(getItem(parentPosition));
 
         if (parentWrapper.isExpanded()) {
             mFlatItemList.remove(flatParentPosition + childPosition + 1);
@@ -1217,7 +1221,7 @@ public abstract class ExpandableRecyclerAdapter<P extends Parent<C>, C, PVH exte
     public void notifyChildRangeRemoved(int parentPosition, int childPositionStart, int itemCount) {
         int flatParentPosition = getFlatParentPosition(parentPosition);
         ExpandableWrapper<P, C> parentWrapper = mFlatItemList.get(flatParentPosition);
-        parentWrapper.setParent(mParentList.get(parentPosition));
+        parentWrapper.setParent(getItem(parentPosition));
 
         if (parentWrapper.isExpanded()) {
             for (int i = 0; i < itemCount; i++) {
@@ -1240,7 +1244,7 @@ public abstract class ExpandableRecyclerAdapter<P extends Parent<C>, C, PVH exte
      */
     @UiThread
     public void notifyChildChanged(int parentPosition, int childPosition) {
-        P parent = mParentList.get(parentPosition);
+        P parent = getItem(parentPosition);
         int flatParentPosition = getFlatParentPosition(parentPosition);
         ExpandableWrapper<P, C> parentWrapper = mFlatItemList.get(flatParentPosition);
         parentWrapper.setParent(parent);
@@ -1267,7 +1271,7 @@ public abstract class ExpandableRecyclerAdapter<P extends Parent<C>, C, PVH exte
      */
     @UiThread
     public void notifyChildRangeChanged(int parentPosition, int childPositionStart, int itemCount) {
-        P parent = mParentList.get(parentPosition);
+        P parent = getItem(parentPosition);
         int flatParentPosition = getFlatParentPosition(parentPosition);
         ExpandableWrapper<P, C> parentWrapper = mFlatItemList.get(flatParentPosition);
         parentWrapper.setParent(parent);
@@ -1296,7 +1300,7 @@ public abstract class ExpandableRecyclerAdapter<P extends Parent<C>, C, PVH exte
      */
     @UiThread
     public void notifyChildMoved(int parentPosition, int fromChildPosition, int toChildPosition) {
-        P parent = mParentList.get(parentPosition);
+        P parent = getItem(parentPosition);
         int flatParentPosition = getFlatParentPosition(parentPosition);
 
         ExpandableWrapper<P, C> parentWrapper = mFlatItemList.get(flatParentPosition);
@@ -1314,13 +1318,12 @@ public abstract class ExpandableRecyclerAdapter<P extends Parent<C>, C, PVH exte
      * Generates a full list of all parents and their children, in order.
      *
      * @param parentList A list of the parents from
-     *                   the {@link ExpandableRecyclerAdapter}
+     *                   the {@link RealmExpandableRecyclerAdapter}
      * @return A list of all parents and their children, expanded
      */
-    private List<ExpandableWrapper<P, C>> generateFlattenedParentChildList(List<P> parentList) {
-        List<ExpandableWrapper<P, C>> flatItemList = new ArrayList<>();
-
-        int parentCount = parentList.size();
+    private RealmList<ExpandableWrapper<P, C>> generateFlattenedParentChildList(@Nullable OrderedRealmCollection<P> parentList) {
+        RealmList<ExpandableWrapper<P, C>> flatItemList = new RealmList<>();
+        int parentCount = parentList == null ? 0 : parentList.size();
         for (int i = 0; i < parentCount; i++) {
             P parent = parentList.get(i);
             generateParentWrapper(flatItemList, parent, parent.isInitiallyExpanded());
@@ -1334,14 +1337,14 @@ public abstract class ExpandableRecyclerAdapter<P extends Parent<C>, C, PVH exte
      * last expanded state.
      *
      * @param parentList A list of the parents from
-     *                   the {@link ExpandableRecyclerAdapter}
+     *                   the {@link RealmExpandableRecyclerAdapter}
      * @param savedLastExpansionState A map of the last expanded state for a given parent key.
      * @return A list of all parents and their children, expanded accordingly
      */
-    private List<ExpandableWrapper<P, C>> generateFlattenedParentChildList(List<P> parentList, Map<P, Boolean> savedLastExpansionState) {
-        List<ExpandableWrapper<P, C>> flatItemList = new ArrayList<>();
+    private RealmList<ExpandableWrapper<P, C>> generateFlattenedParentChildList(@Nullable OrderedRealmCollection<P> parentList, Map<P, Boolean> savedLastExpansionState) {
+        RealmList<ExpandableWrapper<P, C>> flatItemList = new RealmList<>();
 
-        int parentCount = parentList.size();
+        int parentCount = parentList == null ? 0 : parentList.size();
         for (int i = 0; i < parentCount; i++) {
             P parent = parentList.get(i);
             Boolean lastExpandedState = savedLastExpansionState.get(parent);
@@ -1353,7 +1356,7 @@ public abstract class ExpandableRecyclerAdapter<P extends Parent<C>, C, PVH exte
         return flatItemList;
     }
 
-    private void generateParentWrapper(List<ExpandableWrapper<P, C>> flatItemList, P parent, boolean shouldExpand) {
+    private void generateParentWrapper(RealmList<ExpandableWrapper<P, C>> flatItemList, P parent, boolean shouldExpand) {
         ExpandableWrapper<P, C> parentWrapper = new ExpandableWrapper<>(parent);
         flatItemList.add(parentWrapper);
         if (shouldExpand) {
@@ -1361,10 +1364,10 @@ public abstract class ExpandableRecyclerAdapter<P extends Parent<C>, C, PVH exte
         }
     }
 
-    private void generateExpandedChildren(List<ExpandableWrapper<P, C>> flatItemList, ExpandableWrapper<P, C> parentWrapper) {
+    private void generateExpandedChildren(RealmList<ExpandableWrapper<P, C>> flatItemList, ExpandableWrapper<P, C> parentWrapper) {
         parentWrapper.setExpanded(true);
 
-        List<ExpandableWrapper<P, C>> wrappedChildList = parentWrapper.getWrappedChildList();
+        RealmList<ExpandableWrapper<P, C>> wrappedChildList = parentWrapper.getWrappedChildList();
         int childCount = wrappedChildList.size();
         for (int j = 0; j < childCount; j++) {
             ExpandableWrapper<P, C> childWrapper = wrappedChildList.get(j);

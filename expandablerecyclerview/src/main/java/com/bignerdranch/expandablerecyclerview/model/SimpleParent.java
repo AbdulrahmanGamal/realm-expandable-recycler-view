@@ -2,13 +2,15 @@ package com.bignerdranch.expandablerecyclerview.model;
 
 import java.util.List;
 
+import io.realm.RealmObject;
+
 /**
  * Simple implementation of the ParentListItem interface,
  * by default all items are not initially expanded.
  *
  * @param <C> Type of the Child Items held by the Parent.
  */
-public class SimpleParent<C> implements Parent<C> {
+public class SimpleParent<C extends RealmObject> implements Parent<C> {
 
     private List<C> mChildList;
 

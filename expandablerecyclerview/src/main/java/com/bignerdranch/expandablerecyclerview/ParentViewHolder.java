@@ -8,6 +8,8 @@ import android.view.View;
 
 import com.bignerdranch.expandablerecyclerview.model.Parent;
 
+import io.realm.RealmObject;
+
 
 /**
  * ViewHolder for a {@link Parent}
@@ -18,15 +20,15 @@ import com.bignerdranch.expandablerecyclerview.model.Parent;
  * @version 1.0
  * @since 5/27/2015
  */
-public class ParentViewHolder<P extends Parent<C>, C> extends RecyclerView.ViewHolder implements View.OnClickListener {
+public class ParentViewHolder<P extends Parent<C>, C extends RealmObject> extends RecyclerView.ViewHolder implements View.OnClickListener {
     @Nullable
     private ParentViewHolderExpandCollapseListener mParentViewHolderExpandCollapseListener;
     private boolean mExpanded;
     P mParent;
-    ExpandableRecyclerAdapter mExpandableAdapter;
+    RealmExpandableRecyclerAdapter mExpandableAdapter;
 
     /**
-     * Empowers {@link com.bignerdranch.expandablerecyclerview.ExpandableRecyclerAdapter}
+     * Empowers {@link RealmExpandableRecyclerAdapter}
      * implementations to be notified of expand/collapse state change events.
      */
     interface ParentViewHolderExpandCollapseListener {
@@ -132,7 +134,7 @@ public class ParentViewHolder<P extends Parent<C>, C> extends RecyclerView.ViewH
 
     /**
      * Setter for the {@link ParentViewHolderExpandCollapseListener} implemented in
-     * {@link com.bignerdranch.expandablerecyclerview.ExpandableRecyclerAdapter}.
+     * {@link RealmExpandableRecyclerAdapter}.
      *
      * @param parentViewHolderExpandCollapseListener The {@link ParentViewHolderExpandCollapseListener} to set on the {@link ParentViewHolder}
      */

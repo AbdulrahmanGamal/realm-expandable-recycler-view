@@ -3,6 +3,7 @@ package com.bignerdranch.expandablerecyclerviewsample.linear.vertical;
 import android.annotation.SuppressLint;
 import android.os.Build;
 import android.support.annotation.NonNull;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.RotateAnimation;
 import android.widget.ImageView;
@@ -10,6 +11,8 @@ import android.widget.TextView;
 
 import com.bignerdranch.expandablerecyclerview.ParentViewHolder;
 import com.bignerdranch.expandablerecyclerviewsample.R;
+
+import io.realm.Realm;
 
 public class RecipeViewHolder extends ParentViewHolder {
 
@@ -20,6 +23,8 @@ public class RecipeViewHolder extends ParentViewHolder {
     private final ImageView mArrowExpandImageView;
     private TextView mRecipeTextView;
 
+    private Recipe recipe;
+
     public RecipeViewHolder(@NonNull View itemView) {
         super(itemView);
         mRecipeTextView = (TextView) itemView.findViewById(R.id.recipe_textview);
@@ -28,12 +33,14 @@ public class RecipeViewHolder extends ParentViewHolder {
     }
 
     public void bind(@NonNull Recipe recipe) {
+        this.recipe = recipe;
         mRecipeTextView.setText(recipe.getName());
     }
 
     @SuppressLint("NewApi")
     @Override
     public void setExpanded(boolean expanded) {
+        Log.d(getClass().getSimpleName(), "setExpanded");
         super.setExpanded(expanded);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             if (expanded) {
@@ -65,5 +72,25 @@ public class RecipeViewHolder extends ParentViewHolder {
             rotateAnimation.setFillAfter(true);
             mArrowExpandImageView.startAnimation(rotateAnimation);
         }
+    }
+
+    @Override
+    protected void expandView() {
+        super.expandView();
+        saveExpandedState(true);
+    }
+
+    @Override
+    protected void collapseView() {
+        super.collapseView();
+        saveExpandedState(false);
+    }
+
+    private void saveExpandedState(boolean expanded) {
+        Realm realm = Realm.getDefaultInstance();
+        realm.beginTransaction();
+        recipe.setExpanded(expanded);
+        realm.commitTransaction();
+        realm.close();
     }
 }

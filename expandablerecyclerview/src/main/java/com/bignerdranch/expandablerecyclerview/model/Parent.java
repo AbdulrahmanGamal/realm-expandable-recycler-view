@@ -2,10 +2,13 @@ package com.bignerdranch.expandablerecyclerview.model;
 
 import java.util.List;
 
+import io.realm.RealmModel;
+import io.realm.RealmObject;
+
 /**
  * Interface for implementing required methods in a parent.
  */
-public interface Parent<C> {
+public interface Parent<C extends RealmObject> extends RealmModel {
 
     /**
      * Getter for the list of this parent's child items.

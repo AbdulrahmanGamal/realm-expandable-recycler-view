@@ -4,12 +4,22 @@ import com.bignerdranch.expandablerecyclerview.model.Parent;
 
 import java.util.List;
 
-public class Recipe implements Parent<Ingredient> {
+import io.realm.RealmList;
+import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
 
+public class Recipe extends RealmObject implements Parent<Ingredient> {
+
+    @PrimaryKey
     private String mName;
-    private List<Ingredient> mIngredients;
+    private RealmList<Ingredient> mIngredients;
+    private boolean expanded;
 
-    public Recipe(String name, List<Ingredient> ingredients) {
+    public Recipe() {
+        // realm constructor
+    }
+
+    public Recipe(String name, RealmList<Ingredient> ingredients) {
         mName = name;
         mIngredients = ingredients;
     }
@@ -23,9 +33,13 @@ public class Recipe implements Parent<Ingredient> {
         return mIngredients;
     }
 
+    public void setExpanded(boolean expanded) {
+        this.expanded = expanded;
+    }
+
     @Override
     public boolean isInitiallyExpanded() {
-        return false;
+        return expanded;
     }
 
     public Ingredient getIngredient(int position) {

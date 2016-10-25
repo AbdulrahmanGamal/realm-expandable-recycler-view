@@ -13,7 +13,7 @@ import android.view.View;
  */
 public class ChildViewHolder<C> extends RecyclerView.ViewHolder {
     C mChild;
-    ExpandableRecyclerAdapter mExpandableAdapter;
+    RealmExpandableRecyclerAdapter mExpandableAdapter;
 
     /**
      * Default constructor.

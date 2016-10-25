@@ -21,9 +21,9 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class ExpandableRecyclerAdapterTest {
+public class RealmExpandableRecyclerAdapterTest {
 
-    private TestExpandableRecyclerAdapter mExpandableRecyclerAdapter;
+    private TestRealmExpandableRecyclerAdapter mExpandableRecyclerAdapter;
     private List<Parent<Object>> mBaseParents;
     private AdapterDataObserver mDataObserver;
 
@@ -36,7 +36,7 @@ public class ExpandableRecyclerAdapterTest {
             mBaseParents.add(parent);
         }
 
-        mExpandableRecyclerAdapter = new TestExpandableRecyclerAdapter(mBaseParents);
+        mExpandableRecyclerAdapter = new TestRealmExpandableRecyclerAdapter(mBaseParents);
         mDataObserver = TestUtils.fixAdapterForTesting(mExpandableRecyclerAdapter);
     }
 
@@ -50,7 +50,7 @@ public class ExpandableRecyclerAdapterTest {
         for (Parent parent : mBaseParents) {
             when(parent.isInitiallyExpanded()).thenReturn(false);
         }
-        mExpandableRecyclerAdapter = new TestExpandableRecyclerAdapter(mBaseParents);
+        mExpandableRecyclerAdapter = new TestRealmExpandableRecyclerAdapter(mBaseParents);
 
         assertEquals(10, mExpandableRecyclerAdapter.getItemCount());
     }
@@ -60,7 +60,7 @@ public class ExpandableRecyclerAdapterTest {
         for (Parent parent : mBaseParents) {
             when(parent.isInitiallyExpanded()).thenReturn(true);
         }
-        mExpandableRecyclerAdapter = new TestExpandableRecyclerAdapter(mBaseParents);
+        mExpandableRecyclerAdapter = new TestRealmExpandableRecyclerAdapter(mBaseParents);
 
         assertEquals(40, mExpandableRecyclerAdapter.getItemCount());
     }
@@ -449,9 +449,9 @@ public class ExpandableRecyclerAdapterTest {
         }
     }
 
-    private static class TestExpandableRecyclerAdapter extends ExpandableRecyclerAdapter<Parent<Object>, Object, ParentViewHolder, ChildViewHolder> {
+    private static class TestRealmExpandableRecyclerAdapter extends RealmExpandableRecyclerAdapter<Parent<Object>, Object, ParentViewHolder, ChildViewHolder> {
 
-        public TestExpandableRecyclerAdapter(@NonNull List<Parent<Object>> parentList) {
+        public TestRealmExpandableRecyclerAdapter(@NonNull List<Parent<Object>> parentList) {
             super(parentList);
         }
 

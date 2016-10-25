@@ -2,17 +2,20 @@ package com.bignerdranch.expandablerecyclerviewsample.linear.vertical;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.annotation.UiThread;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.bignerdranch.expandablerecyclerview.ExpandableRecyclerAdapter;
+import com.bignerdranch.expandablerecyclerview.RealmExpandableRecyclerAdapter;
 import com.bignerdranch.expandablerecyclerviewsample.R;
 
 import java.util.List;
 
-public class RecipeAdapter extends ExpandableRecyclerAdapter<Recipe, Ingredient, RecipeViewHolder, IngredientViewHolder> {
+import io.realm.OrderedRealmCollection;
+
+public class RecipeAdapter extends RealmExpandableRecyclerAdapter<Recipe, Ingredient, RecipeViewHolder, IngredientViewHolder> {
 
     private static final int PARENT_VEGETARIAN = 0;
     private static final int PARENT_NORMAL = 1;
@@ -22,8 +25,8 @@ public class RecipeAdapter extends ExpandableRecyclerAdapter<Recipe, Ingredient,
     private LayoutInflater mInflater;
     private List<Recipe> mRecipeList;
 
-    public RecipeAdapter(Context context, @NonNull List<Recipe> recipeList) {
-        super(recipeList);
+    public RecipeAdapter(@NonNull Context context, @Nullable OrderedRealmCollection<Recipe> recipeList) {
+        super(context, recipeList);
         mRecipeList = recipeList;
         mInflater = LayoutInflater.from(context);
     }
