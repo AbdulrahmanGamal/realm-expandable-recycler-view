@@ -3,7 +3,6 @@ package com.bignerdranch.expandablerecyclerviewsample.linear.vertical;
 import android.annotation.SuppressLint;
 import android.os.Build;
 import android.support.annotation.NonNull;
-import android.util.Log;
 import android.view.View;
 import android.view.animation.RotateAnimation;
 import android.widget.ImageView;
@@ -40,7 +39,6 @@ public class RecipeViewHolder extends ParentViewHolder {
     @SuppressLint("NewApi")
     @Override
     public void setExpanded(boolean expanded) {
-        Log.d(getClass().getSimpleName(), "setExpanded");
         super.setExpanded(expanded);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             if (expanded) {

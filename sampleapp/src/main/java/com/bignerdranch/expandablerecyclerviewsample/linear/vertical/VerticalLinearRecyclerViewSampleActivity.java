@@ -13,7 +13,11 @@ import android.widget.Toast;
 import com.bignerdranch.expandablerecyclerview.RealmExpandableRecyclerAdapter;
 import com.bignerdranch.expandablerecyclerviewsample.R;
 
+import java.util.Arrays;
+import java.util.List;
+
 import io.realm.Realm;
+import io.realm.RealmList;
 
 /**
  * Sample Activity for the vertical linear RecyclerView sample.
@@ -41,29 +45,29 @@ public class VerticalLinearRecyclerViewSampleActivity extends AppCompatActivity{
 
         realm = Realm.getDefaultInstance();
 
-//        Ingredient beef = new Ingredient("beef", false);
-//        Ingredient cheese = new Ingredient("cheese", true);
-//        Ingredient salsa = new Ingredient("salsa", true);
-//        Ingredient tortilla = new Ingredient("tortilla", true);
-//        Ingredient ketchup = new Ingredient("ketchup", true);
-//        Ingredient bun = new Ingredient("bun", true);
-//
-//        RealmList<Ingredient> tacoIngredients = new RealmList<>();
-//        tacoIngredients.addAll(Arrays.asList(beef, cheese, salsa, tortilla));
-//        Recipe taco = new Recipe("taco", tacoIngredients);
-//
-//        RealmList<Ingredient> quesadillaIngredients = new RealmList<>();
-//        quesadillaIngredients.addAll(Arrays.asList(cheese, tortilla));
-//        Recipe quesadilla = new Recipe("quesadilla", quesadillaIngredients);
-//
-//        RealmList<Ingredient> burgerIngredients = new RealmList<>();
-//        burgerIngredients.addAll(Arrays.asList(beef, cheese, ketchup, bun));
-//        Recipe burger = new Recipe("burger", burgerIngredients);
-//
-//        final List<Recipe> recipes = Arrays.asList(taco, quesadilla, burger);
-//        realm.beginTransaction();
-//        realm.insertOrUpdate(recipes);
-//        realm.commitTransaction();
+        Ingredient beef = new Ingredient("beef", false);
+        Ingredient cheese = new Ingredient("cheese", true);
+        Ingredient salsa = new Ingredient("salsa", true);
+        Ingredient tortilla = new Ingredient("tortilla", true);
+        Ingredient ketchup = new Ingredient("ketchup", true);
+        Ingredient bun = new Ingredient("bun", true);
+
+        RealmList<Ingredient> tacoIngredients = new RealmList<>();
+        tacoIngredients.addAll(Arrays.asList(beef, cheese, salsa, tortilla));
+        Recipe taco = new Recipe("taco", tacoIngredients);
+
+        RealmList<Ingredient> quesadillaIngredients = new RealmList<>();
+        quesadillaIngredients.addAll(Arrays.asList(cheese, tortilla));
+        Recipe quesadilla = new Recipe("quesadilla", quesadillaIngredients);
+
+        RealmList<Ingredient> burgerIngredients = new RealmList<>();
+        burgerIngredients.addAll(Arrays.asList(beef, cheese, ketchup, bun));
+        Recipe burger = new Recipe("burger", burgerIngredients);
+
+        final List<Recipe> recipes = Arrays.asList(taco, quesadilla, burger);
+        realm.beginTransaction();
+        realm.insertOrUpdate(recipes);
+        realm.commitTransaction();
 
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recyclerview);
         mAdapter = new RecipeAdapter(this, realm.where(Recipe.class).findAll());
