@@ -8,14 +8,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.bignerdranch.expandablerecyclerview.RealmExpandableRecyclerAdapter;
+import com.bignerdranch.expandablerecyclerview.RealmExpandableSearchRecyclerAdapter;
 import com.bignerdranch.expandablerecyclerviewsample.R;
 
 import java.util.List;
 
 import io.realm.OrderedRealmCollection;
 
-public class RecipeAdapter extends RealmExpandableRecyclerAdapter<Recipe, Ingredient, RecipeViewHolder, IngredientViewHolder> {
+public class RecipeAdapter extends RealmExpandableSearchRecyclerAdapter<Recipe, Ingredient, RecipeViewHolder, IngredientViewHolder> {
 
     private static final int PARENT_VEGETARIAN = 0;
     private static final int PARENT_NORMAL = 1;
@@ -25,8 +25,8 @@ public class RecipeAdapter extends RealmExpandableRecyclerAdapter<Recipe, Ingred
     private LayoutInflater mInflater;
     private List<Recipe> mRecipeList;
 
-    public RecipeAdapter(@NonNull Context context, @Nullable OrderedRealmCollection<Recipe> recipeList) {
-        super(context, recipeList);
+    public RecipeAdapter(@NonNull Context context, @Nullable OrderedRealmCollection<Recipe> recipeList, @NonNull String filterKey) {
+        super(context, recipeList, filterKey);
         mRecipeList = recipeList;
         mInflater = LayoutInflater.from(context);
     }

@@ -8,6 +8,7 @@ import android.support.annotation.UiThread;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.widget.Toast;
 
 import com.bignerdranch.expandablerecyclerview.RealmExpandableRecyclerAdapter;
@@ -70,7 +71,7 @@ public class VerticalLinearRecyclerViewSampleActivity extends AppCompatActivity{
         realm.commitTransaction();
 
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recyclerview);
-        mAdapter = new RecipeAdapter(this, realm.where(Recipe.class).findAll());
+        mAdapter = new RecipeAdapter(this, realm.where(Recipe.class).findAll(), "mName");
         mAdapter.setExpandCollapseListener(new RealmExpandableRecyclerAdapter.ExpandCollapseListener() {
             @UiThread
             @Override
@@ -99,6 +100,20 @@ public class VerticalLinearRecyclerViewSampleActivity extends AppCompatActivity{
 
         recyclerView.setAdapter(mAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        SearchView searchView = (SearchView) findViewById(R.id.searchview);
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                mAdapter.filter(newText);
+                return true;
+            }
+        });
     }
 
     @Override
