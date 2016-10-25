@@ -5,6 +5,7 @@ import android.support.v7.widget.RecyclerView.AdapterDataObserver;
 import android.view.ViewGroup;
 
 import com.bignerdranch.expandablerecyclerview.model.ExpandableWrapper;
+import com.bignerdranch.expandablerecyclerview.model.MockRealmObject;
 import com.bignerdranch.expandablerecyclerview.model.Parent;
 
 import org.junit.Before;
@@ -13,6 +14,8 @@ import org.mockito.Mockito;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import io.realm.RealmList;
 
 import static junit.framework.Assert.assertEquals;
 import static org.mockito.Matchers.anyInt;
@@ -24,15 +27,15 @@ import static org.mockito.Mockito.when;
 public class RealmExpandableRecyclerAdapterTest {
 
     private TestRealmExpandableRecyclerAdapter mExpandableRecyclerAdapter;
-    private List<Parent<Object>> mBaseParents;
+    private RealmList<Parent<MockRealmObject>> mBaseParents;
     private AdapterDataObserver mDataObserver;
 
     @Before
     public void setup() throws NoSuchFieldException, IllegalAccessException {
-        mBaseParents = new ArrayList<>();
+        mBaseParents = new RealmList<>();
 
         for (int i = 0; i < 10; i++) {
-            Parent<Object> parent = generateParent(i % 2 == 0, 3);
+            Parent<MockRealmObject> parent = generateParent(i % 2 == 0, 3);
             mBaseParents.add(parent);
         }
 
@@ -80,12 +83,12 @@ public class RealmExpandableRecyclerAdapterTest {
     }
 
     @Test
-    public void collapsingExpandedParentWithObjectRemovesChildren() {
+    public void collapsingExpandedParentWithRealmObjectRemovesChildren() {
         assertEquals(25, mExpandableRecyclerAdapter.getItemCount());
         verifyParentItemsMatch(mBaseParents.get(0), true, 0);
         verifyParentItemsMatch(mBaseParents.get(1), false, 4);
 
-        Parent<Object> firstParent = mBaseParents.get(0);
+        Parent<MockRealmObject> firstParent = mBaseParents.get(0);
         mExpandableRecyclerAdapter.collapseParent(firstParent);
 
         verify(mDataObserver).onItemRangeRemoved(1, 3);
@@ -107,7 +110,7 @@ public class RealmExpandableRecyclerAdapterTest {
     }
 
     @Test
-    public void collapsingCollapsedParentWithObjectHasNoEffect() {
+    public void collapsingCollapsedParentWithRealmObjectHasNoEffect() {
         assertEquals(25, mExpandableRecyclerAdapter.getItemCount());
         verifyParentItemsMatch(mBaseParents.get(9), false, 24);
 
@@ -131,7 +134,7 @@ public class RealmExpandableRecyclerAdapterTest {
     }
 
     @Test
-    public void expandingParentWithObjectAddsChildren() {
+    public void expandingParentWithRealmObjectAddsChildren() {
         assertEquals(25, mExpandableRecyclerAdapter.getItemCount());
         verifyParentItemsMatch(mBaseParents.get(9), false, 24);
 
@@ -155,7 +158,7 @@ public class RealmExpandableRecyclerAdapterTest {
     }
 
     @Test
-    public void expandingExpandedWithObjectParentHasNoEffect() {
+    public void expandingExpandedWithRealmObjectParentHasNoEffect() {
         assertEquals(25, mExpandableRecyclerAdapter.getItemCount());
         verifyParentItemsMatch(mBaseParents.get(0), true, 0);
 
@@ -168,11 +171,11 @@ public class RealmExpandableRecyclerAdapterTest {
 
     @Test
     public void notifyParentInsertedWithInitiallyCollapsedItem() {
-        Parent<Object> originalFirstItem = mBaseParents.get(0);
+        Parent<MockRealmObject> originalFirstItem = mBaseParents.get(0);
         assertEquals(25, mExpandableRecyclerAdapter.getItemCount());
         verifyParentItemsMatch(originalFirstItem, true, 0);
 
-        Parent<Object> insertedItem = generateParent(false, 2);
+        Parent<MockRealmObject> insertedItem = generateParent(false, 2);
         when(insertedItem.isInitiallyExpanded()).thenReturn(false);
         mBaseParents.add(0, insertedItem);
         mExpandableRecyclerAdapter.notifyParentInserted(0);
@@ -185,8 +188,8 @@ public class RealmExpandableRecyclerAdapterTest {
 
     @Test
     public void notifyParentInsertedWithInitiallyExpandedItem() {
-        Parent<Object> originalLastParent = mBaseParents.get(9);
-        Parent<Object> insertedItem = generateParent(true, 3);
+        Parent<MockRealmObject> originalLastParent = mBaseParents.get(9);
+        Parent<MockRealmObject> insertedItem = generateParent(true, 3);
 
         assertEquals(25, mExpandableRecyclerAdapter.getItemCount());
         verifyParentItemsMatch(originalLastParent, false, 24);
@@ -202,8 +205,8 @@ public class RealmExpandableRecyclerAdapterTest {
 
     @Test
     public void notifyParentRangeInsertedMidList() {
-        Parent<Object> firstInsertedItem = generateParent(true, 3);
-        Parent<Object> secondInsertedItem = generateParent(false, 2);
+        Parent<MockRealmObject> firstInsertedItem = generateParent(true, 3);
+        Parent<MockRealmObject> secondInsertedItem = generateParent(false, 2);
 
         assertEquals(25, mExpandableRecyclerAdapter.getItemCount());
 
@@ -219,8 +222,8 @@ public class RealmExpandableRecyclerAdapterTest {
 
     @Test
     public void notifyParentRangeInsertedEndList() {
-        Parent<Object> firstInsertedItem = generateParent(true, 3);
-        Parent<Object> secondInsertedItem = generateParent(false, 2);
+        Parent<MockRealmObject> firstInsertedItem = generateParent(true, 3);
+        Parent<MockRealmObject> secondInsertedItem = generateParent(false, 2);
 
         assertEquals(25, mExpandableRecyclerAdapter.getItemCount());
 
@@ -236,8 +239,8 @@ public class RealmExpandableRecyclerAdapterTest {
 
     @Test
     public void notifyParentRemovedOnExpandedItem() {
-        Parent<Object> removedItem = mBaseParents.get(0);
-        Parent<Object> originalSecondItem = mBaseParents.get(1);
+        Parent<MockRealmObject> removedItem = mBaseParents.get(0);
+        Parent<MockRealmObject> originalSecondItem = mBaseParents.get(1);
 
         assertEquals(25, mExpandableRecyclerAdapter.getItemCount());
         verifyParentItemsMatch(removedItem, true, 0);
@@ -253,8 +256,8 @@ public class RealmExpandableRecyclerAdapterTest {
 
     @Test
     public void notifyParentRemovedOnCollapsedItem() {
-        Parent<Object> removedItem = mBaseParents.get(9);
-        Parent<Object> originalSecondToLastItem = mBaseParents.get(8);
+        Parent<MockRealmObject> removedItem = mBaseParents.get(9);
+        Parent<MockRealmObject> originalSecondToLastItem = mBaseParents.get(8);
 
         assertEquals(25, mExpandableRecyclerAdapter.getItemCount());
         verifyParentItemsMatch(removedItem, false, 24);
@@ -270,8 +273,8 @@ public class RealmExpandableRecyclerAdapterTest {
 
     @Test
     public void notifyParentRangeRemoved() {
-        Parent<Object> firstRemovedItem = mBaseParents.get(7);
-        Parent<Object> secondRemovedItem = mBaseParents.get(8);
+        Parent<MockRealmObject> firstRemovedItem = mBaseParents.get(7);
+        Parent<MockRealmObject> secondRemovedItem = mBaseParents.get(8);
 
         assertEquals(25, mExpandableRecyclerAdapter.getItemCount());
         verifyParentItemsMatch(firstRemovedItem, false, 19);
@@ -288,7 +291,7 @@ public class RealmExpandableRecyclerAdapterTest {
 
     @Test
     public void notifyParentChanged() {
-        Parent<Object> changedParent = generateParent(false, 3);
+        Parent<MockRealmObject> changedParent = generateParent(false, 3);
 
         assertEquals(25, mExpandableRecyclerAdapter.getItemCount());
         verifyParentItemsMatch(mBaseParents.get(4), true, 10);
@@ -302,8 +305,8 @@ public class RealmExpandableRecyclerAdapterTest {
 
     @Test
     public void notifyParentRangeChanged() {
-        Parent<Object> firstChangedParent = generateParent(false, 3);
-        Parent<Object> secondChangedParent = generateParent(false, 3);
+        Parent<MockRealmObject> firstChangedParent = generateParent(false, 3);
+        Parent<MockRealmObject> secondChangedParent = generateParent(false, 3);
 
         assertEquals(25, mExpandableRecyclerAdapter.getItemCount());
         verifyParentItemsMatch(mBaseParents.get(4), true, 10);
@@ -323,7 +326,7 @@ public class RealmExpandableRecyclerAdapterTest {
         assertEquals(25, mExpandableRecyclerAdapter.getItemCount());
         verifyParentItemsMatch(mBaseParents.get(5), false, 14);
 
-        Parent<Object> movedParent = mBaseParents.remove(5);
+        Parent<MockRealmObject> movedParent = mBaseParents.remove(5);
         mBaseParents.add(movedParent);
         mExpandableRecyclerAdapter.notifyParentMoved(5, 9);
 
@@ -336,7 +339,7 @@ public class RealmExpandableRecyclerAdapterTest {
         assertEquals(25, mExpandableRecyclerAdapter.getItemCount());
         verifyParentItemsMatch(mBaseParents.get(6), true, 15);
 
-        Parent<Object> movedParent = mBaseParents.remove(6);
+        Parent<MockRealmObject> movedParent = mBaseParents.remove(6);
         mBaseParents.add(8, movedParent);
         mExpandableRecyclerAdapter.notifyParentMoved(6, 8);
 
@@ -347,9 +350,9 @@ public class RealmExpandableRecyclerAdapterTest {
     @Test
     public void notifyParentDataSetChangedWithExpansionPreservationAllCollapsed() {
         mExpandableRecyclerAdapter.collapseAllParents();
-        Parent<Object> movedParent = mBaseParents.remove(0);
+        Parent<MockRealmObject> movedParent = mBaseParents.remove(0);
         mBaseParents.add(movedParent);
-        Parent<Object> newParent = generateParent(true, 1);
+        Parent<MockRealmObject> newParent = generateParent(true, 1);
         mBaseParents.add(3, newParent);
         mExpandableRecyclerAdapter.notifyParentDataSetChanged(true);
 
@@ -364,9 +367,9 @@ public class RealmExpandableRecyclerAdapterTest {
     @Test
     public void notifyParentDataSetChangedWithoutExpansionPreservationAllCollapsed() {
         mExpandableRecyclerAdapter.collapseAllParents();
-        Parent<Object> movedParent = mBaseParents.remove(0);
+        Parent<MockRealmObject> movedParent = mBaseParents.remove(0);
         mBaseParents.add(movedParent);
-        Parent<Object> newParent = generateParent(true, 1);
+        Parent<MockRealmObject> newParent = generateParent(true, 1);
         mBaseParents.add(3, newParent);
         mExpandableRecyclerAdapter.notifyParentDataSetChanged(false);
 
@@ -387,7 +390,7 @@ public class RealmExpandableRecyclerAdapterTest {
         verify(mDataObserver).onChanged();
         assertEquals(25, mExpandableRecyclerAdapter.getItemCount());
         int flatIndex = 0;
-        for (Parent<Object> baseParent : mBaseParents) {
+        for (Parent<MockRealmObject> baseParent : mBaseParents) {
             verifyParentItemsMatch(baseParent, baseParent.isInitiallyExpanded(), flatIndex);
             flatIndex++;
             if (baseParent.isInitiallyExpanded()) {
@@ -405,7 +408,7 @@ public class RealmExpandableRecyclerAdapterTest {
         verify(mDataObserver).onChanged();
         assertEquals(25, mExpandableRecyclerAdapter.getItemCount());
         int flatIndex = 0;
-        for (Parent<Object> baseParent : mBaseParents) {
+        for (Parent<MockRealmObject> baseParent : mBaseParents) {
             verifyParentItemsMatch(baseParent, baseParent.isInitiallyExpanded(), flatIndex);
             flatIndex++;
             if (baseParent.isInitiallyExpanded()) {
@@ -414,12 +417,12 @@ public class RealmExpandableRecyclerAdapterTest {
         }
     }
 
-    private void verifyParentItemsMatch(Parent<Object> expectedParent, boolean expectedExpansion, int actualParentIndex) {
+    private void verifyParentItemsMatch(Parent<MockRealmObject> expectedParent, boolean expectedExpansion, int actualParentIndex) {
         assertEquals(expectedParent, getListItem(actualParentIndex));
         assertEquals(expectedExpansion, mExpandableRecyclerAdapter.mFlatItemList.get(actualParentIndex).isExpanded());
 
         if (expectedExpansion) {
-            List<Object> expectedChildList = expectedParent.getChildList();
+            List<MockRealmObject> expectedChildList = expectedParent.getChildList();
             int actualChildIndex = actualParentIndex + 1;
             for (int i = 0; i < expectedChildList.size(); i++) {
                 assertEquals(expectedChildList.get(i), getListItem(actualChildIndex));
@@ -428,20 +431,20 @@ public class RealmExpandableRecyclerAdapterTest {
         }
     }
 
-    private Parent<Object> generateParent(boolean initiallyExpanded, int childCount) {
-        List<Object> childObjects = new ArrayList<>();
+    private Parent<MockRealmObject> generateParent(boolean initiallyExpanded, int childCount) {
+        List<MockRealmObject> childRealmObjects = new ArrayList<>();
         for (int i = 0; i < childCount; i++) {
-            childObjects.add(new Object());
+            childRealmObjects.add(new MockRealmObject());
         }
-        Parent<Object> parent = (Parent<Object>) mock(Parent.class);
-        Mockito.when(parent.getChildList()).thenReturn(childObjects);
+        Parent<MockRealmObject> parent = (Parent<MockRealmObject>) mock(Parent.class);
+        Mockito.when(parent.getChildList()).thenReturn(childRealmObjects);
         when(parent.isInitiallyExpanded()).thenReturn(initiallyExpanded);
 
         return parent;
     }
 
     protected Object getListItem(int flatPosition) {
-        ExpandableWrapper<Parent<Object>, Object> listItem = mExpandableRecyclerAdapter.mFlatItemList.get(flatPosition);
+        ExpandableWrapper<Parent<MockRealmObject>, MockRealmObject> listItem = mExpandableRecyclerAdapter.mFlatItemList.get(flatPosition);
         if (listItem.isParent()) {
             return listItem.getParent();
         } else {
@@ -449,10 +452,10 @@ public class RealmExpandableRecyclerAdapterTest {
         }
     }
 
-    private static class TestRealmExpandableRecyclerAdapter extends RealmExpandableRecyclerAdapter<Parent<Object>, Object, ParentViewHolder, ChildViewHolder> {
+    private static class TestRealmExpandableRecyclerAdapter extends RealmExpandableRecyclerAdapter<Parent<MockRealmObject>, MockRealmObject, ParentViewHolder, ChildViewHolder> {
 
-        public TestRealmExpandableRecyclerAdapter(@NonNull List<Parent<Object>> parentList) {
-            super(parentList);
+        public TestRealmExpandableRecyclerAdapter(@NonNull RealmList<Parent<MockRealmObject>> parentList) {
+            super(null, parentList);
         }
 
         @NonNull
@@ -467,12 +470,12 @@ public class RealmExpandableRecyclerAdapterTest {
         }
 
         @Override
-        public void onBindParentViewHolder(@NonNull ParentViewHolder parentViewHolder, int parentPosition, @NonNull Parent<Object> parent) {
+        public void onBindParentViewHolder(@NonNull ParentViewHolder parentViewHolder, int parentPosition, @NonNull Parent<MockRealmObject> parent) {
 
         }
 
         @Override
-        public void onBindChildViewHolder(@NonNull ChildViewHolder childViewHolder, int parentPosition, int childPosition, @NonNull Object child) {
+        public void onBindChildViewHolder(@NonNull ChildViewHolder childViewHolder, int parentPosition, int childPosition, @NonNull MockRealmObject child) {
 
         }
     }

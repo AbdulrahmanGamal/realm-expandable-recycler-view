@@ -12,12 +12,12 @@ import static org.mockito.Mockito.when;
 
 public class ExpandableWrapperTest {
 
-    private ExpandableWrapper<Parent<Object>, Object> mExpandableWrapper;
-    private Parent<Object> mParent;
+    private ExpandableWrapper<Parent<MockRealmObject>, MockRealmObject> mExpandableWrapper;
+    private Parent<MockRealmObject> mParent;
 
     @Before
     public void setup() {
-        mParent = (Parent<Object>) mock(Parent.class);
+        mParent = (Parent<MockRealmObject>) mock(Parent.class);
         mExpandableWrapper = new ExpandableWrapper<>(mParent);
     }
 
@@ -41,15 +41,15 @@ public class ExpandableWrapperTest {
 
     @Test
     public void getChildItemListReturnsWrappedChildItemListFromParentListItem() {
-        final List<Object> expected = new ArrayList<>();
-        expected.add(new Object());
-        expected.add(new Object());
-        expected.add(new Object());
+        final List<MockRealmObject> expected = new ArrayList<>();
+        expected.add(new MockRealmObject());
+        expected.add(new MockRealmObject());
+        expected.add(new MockRealmObject());
 
         when(mParent.getChildList()).thenReturn(expected);
         mExpandableWrapper = new ExpandableWrapper<>(mParent);
 
-        List<ExpandableWrapper<Parent<Object>, Object>> wrappedChildList = mExpandableWrapper.getWrappedChildList();
+        List<ExpandableWrapper<Parent<MockRealmObject>, MockRealmObject>> wrappedChildList = mExpandableWrapper.getWrappedChildList();
         assertEquals(expected.size(), wrappedChildList.size());
         for (int i = 0; i < expected.size(); i++) {
             assertEquals(expected.get(i), wrappedChildList.get(i).getChild());
@@ -60,7 +60,7 @@ public class ExpandableWrapperTest {
     public void getChildItemListReturnsEmptyListFromParentListItem() {
         boolean expected = true;
 
-        final List<Object> childItemList = new ArrayList<>();
+        final List<MockRealmObject> childItemList = new ArrayList<>();
         when(mParent.getChildList()).thenReturn(childItemList);
         mExpandableWrapper = new ExpandableWrapper<>(mParent);
 
