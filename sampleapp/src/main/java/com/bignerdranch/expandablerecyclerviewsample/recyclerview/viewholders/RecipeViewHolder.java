@@ -1,4 +1,4 @@
-package com.bignerdranch.expandablerecyclerviewsample.linear.vertical;
+package com.bignerdranch.expandablerecyclerviewsample.recyclerview.viewholders;
 
 import android.annotation.SuppressLint;
 import android.os.Build;
@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import com.bignerdranch.expandablerecyclerview.ParentViewHolder;
 import com.bignerdranch.expandablerecyclerviewsample.R;
+import com.bignerdranch.expandablerecyclerviewsample.model.Recipe;
 
 import io.realm.Realm;
 

@@ -5,7 +5,7 @@ import android.app.Application;
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
 
-public class ExpandableRecyclerViewSample extends Application {
+public class ExpandableRecyclerViewSampleApplication extends Application {
 
     @Override
     public void onCreate() {

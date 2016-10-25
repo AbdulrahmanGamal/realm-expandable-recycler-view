@@ -1,4 +1,4 @@
-package com.bignerdranch.expandablerecyclerviewsample.linear.vertical;
+package com.bignerdranch.expandablerecyclerviewsample.model;
 
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;

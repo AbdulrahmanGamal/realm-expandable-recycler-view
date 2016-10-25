@@ -1,4 +1,4 @@
-package com.bignerdranch.expandablerecyclerviewsample.linear.vertical;
+package com.bignerdranch.expandablerecyclerviewsample.recyclerview.adapter;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -10,6 +10,10 @@ import android.view.ViewGroup;
 
 import com.bignerdranch.expandablerecyclerview.RealmExpandableSearchRecyclerAdapter;
 import com.bignerdranch.expandablerecyclerviewsample.R;
+import com.bignerdranch.expandablerecyclerviewsample.recyclerview.viewholders.RecipeViewHolder;
+import com.bignerdranch.expandablerecyclerviewsample.model.Ingredient;
+import com.bignerdranch.expandablerecyclerviewsample.model.Recipe;
+import com.bignerdranch.expandablerecyclerviewsample.recyclerview.viewholders.IngredientViewHolder;
 
 import java.util.List;
 
