@@ -1,4 +1,4 @@
-package com.bignerdranch.expandablerecyclerview;
+package io.realm;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -6,9 +6,10 @@ import android.support.annotation.UiThread;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
-import com.bignerdranch.expandablerecyclerview.model.Parent;
+import io.realm.model.Parent;
+import io.realm.model.Child;
 
-import io.realm.RealmObject;
+import static android.support.v7.widget.RecyclerView.NO_POSITION;
 
 
 /**
@@ -20,7 +21,7 @@ import io.realm.RealmObject;
  * @version 1.0
  * @since 5/27/2015
  */
-public class ParentViewHolder<P extends Parent<C>, C extends RealmObject> extends RecyclerView.ViewHolder implements View.OnClickListener {
+public class ParentViewHolder<P extends Parent<C>, C extends Child> extends RecyclerView.ViewHolder implements View.OnClickListener {
     @Nullable
     private ParentViewHolderExpandCollapseListener mParentViewHolderExpandCollapseListener;
     private boolean mExpanded;
@@ -31,7 +32,7 @@ public class ParentViewHolder<P extends Parent<C>, C extends RealmObject> extend
      * Empowers {@link RealmExpandableRecyclerAdapter}
      * implementations to be notified of expand/collapse state change events.
      */
-    interface ParentViewHolderExpandCollapseListener {
+    public interface ParentViewHolderExpandCollapseListener {
 
         /**
          * Called when a parent is expanded.
@@ -80,7 +81,7 @@ public class ParentViewHolder<P extends Parent<C>, C extends RealmObject> extend
     @UiThread
     public int getParentAdapterPosition() {
         int flatPosition = getAdapterPosition();
-        if (flatPosition == RecyclerView.NO_POSITION) {
+        if (flatPosition == NO_POSITION) {
             return flatPosition;
         }
 
@@ -88,7 +89,7 @@ public class ParentViewHolder<P extends Parent<C>, C extends RealmObject> extend
     }
 
     /**
-     * Sets a {@link android.view.View.OnClickListener} on the entire parent
+     * Sets a {@link View.OnClickListener} on the entire parent
      * view to trigger expansion.
      */
     @UiThread
@@ -144,7 +145,7 @@ public class ParentViewHolder<P extends Parent<C>, C extends RealmObject> extend
     }
 
     /**
-     * {@link android.view.View.OnClickListener} to listen for click events on
+     * {@link View.OnClickListener} to listen for click events on
      * the entire parent {@link View}.
      * <p>
      * Only registered if {@link #shouldItemViewClickToggleExpansion()} is true.
@@ -169,7 +170,7 @@ public class ParentViewHolder<P extends Parent<C>, C extends RealmObject> extend
      * expansion in response to a another event or {@link #collapseView()} to
      * trigger a collapse.
      *
-     * @return true to set an {@link android.view.View.OnClickListener} on the item view
+     * @return true to set an {@link View.OnClickListener} on the item view
      */
     @UiThread
     public boolean shouldItemViewClickToggleExpansion() {
@@ -181,12 +182,14 @@ public class ParentViewHolder<P extends Parent<C>, C extends RealmObject> extend
      */
     @UiThread
     protected void expandView() {
+        if (mParentViewHolderExpandCollapseListener != null) {
+            int adapterPosition = getAdapterPosition();
+            if (adapterPosition == NO_POSITION) return;
+            mParentViewHolderExpandCollapseListener.onParentExpanded(adapterPosition);
+        }
+
         setExpanded(true);
         onExpansionToggled(false);
-
-        if (mParentViewHolderExpandCollapseListener != null) {
-            mParentViewHolderExpandCollapseListener.onParentExpanded(getAdapterPosition());
-        }
     }
 
     /**
@@ -194,11 +197,13 @@ public class ParentViewHolder<P extends Parent<C>, C extends RealmObject> extend
      */
     @UiThread
     protected void collapseView() {
+        if (mParentViewHolderExpandCollapseListener != null) {
+            int adapterPosition = getAdapterPosition();
+            if (adapterPosition == NO_POSITION) return;
+            mParentViewHolderExpandCollapseListener.onParentCollapsed(adapterPosition);
+        }
+
         setExpanded(false);
         onExpansionToggled(true);
-
-        if (mParentViewHolderExpandCollapseListener != null) {
-            mParentViewHolderExpandCollapseListener.onParentCollapsed(getAdapterPosition());
-        }
     }
 }

@@ -1,14 +1,13 @@
-package com.bignerdranch.expandablerecyclerview.model;
+package io.realm.model;
 
 import java.util.List;
 
 import io.realm.RealmModel;
-import io.realm.RealmObject;
 
 /**
  * Interface for implementing required methods in a parent.
  */
-public interface Parent<C extends RealmObject> extends RealmModel {
+public interface Parent<C extends Child> extends RealmModel {
 
     /**
      * Getter for the list of this parent's child items.
@@ -25,5 +24,5 @@ public interface Parent<C extends RealmObject> extends RealmModel {
      *
      * @return true if expanded, false if not
      */
-    boolean isInitiallyExpanded();
+    boolean isExpanded();
 }

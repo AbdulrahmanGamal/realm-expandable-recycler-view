@@ -1,4 +1,4 @@
-package com.bignerdranch.expandablerecyclerviewsample;
+package com.github.reline.expandablerecyclerviewsample;
 
 import android.app.Application;
 

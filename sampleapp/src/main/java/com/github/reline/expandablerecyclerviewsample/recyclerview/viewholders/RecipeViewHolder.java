@@ -1,4 +1,4 @@
-package com.bignerdranch.expandablerecyclerviewsample.recyclerview.viewholders;
+package com.github.reline.expandablerecyclerviewsample.recyclerview.viewholders;
 
 import android.annotation.SuppressLint;
 import android.os.Build;
@@ -8,10 +8,10 @@ import android.view.animation.RotateAnimation;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.bignerdranch.expandablerecyclerview.ParentViewHolder;
 import com.bignerdranch.expandablerecyclerviewsample.R;
-import com.bignerdranch.expandablerecyclerviewsample.model.Recipe;
+import com.github.reline.expandablerecyclerviewsample.model.Recipe;
 
+import io.realm.ParentViewHolder;
 import io.realm.Realm;
 
 public class RecipeViewHolder extends ParentViewHolder {

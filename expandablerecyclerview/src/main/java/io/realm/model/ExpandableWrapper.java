@@ -1,10 +1,9 @@
-package com.bignerdranch.expandablerecyclerview.model;
+package io.realm.model;
 
 import android.support.annotation.NonNull;
 
 import io.realm.RealmList;
 import io.realm.RealmModel;
-import io.realm.RealmObject;
 
 /**
  * Wrapper used to link metadata with a list item.
@@ -12,7 +11,7 @@ import io.realm.RealmObject;
  * @param <P> Parent list item
  * @param <C> Child list item
  */
-public class ExpandableWrapper<P extends Parent<C>, C extends RealmObject> implements RealmModel {
+public class ExpandableWrapper<P extends Parent<C>, C extends Child> implements RealmModel {
 
     private P mParent;
     private C mChild;
@@ -79,7 +78,7 @@ public class ExpandableWrapper<P extends Parent<C>, C extends RealmObject> imple
             throw new IllegalStateException("Parent not wrapped");
         }
 
-        return mParent.isInitiallyExpanded();
+        return mParent.isExpanded();
     }
 
     /**

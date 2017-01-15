@@ -1,4 +1,4 @@
-package com.bignerdranch.expandablerecyclerviewsample;
+package com.github.reline.expandablerecyclerviewsample;
 
 import android.os.Bundle;
 import android.support.annotation.UiThread;
@@ -8,15 +8,16 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.widget.Toast;
 
-import com.bignerdranch.expandablerecyclerview.RealmExpandableRecyclerAdapter;
-import com.bignerdranch.expandablerecyclerviewsample.model.Ingredient;
-import com.bignerdranch.expandablerecyclerviewsample.model.Recipe;
-import com.bignerdranch.expandablerecyclerviewsample.recyclerview.adapter.RecipeAdapter;
+import com.bignerdranch.expandablerecyclerviewsample.R;
+import com.github.reline.expandablerecyclerviewsample.model.Ingredient;
+import com.github.reline.expandablerecyclerviewsample.model.Recipe;
+import com.github.reline.expandablerecyclerviewsample.recyclerview.adapter.RecipeAdapter;
 
 import java.util.Arrays;
 import java.util.List;
 
 import io.realm.Realm;
+import io.realm.RealmExpandableRecyclerAdapter;
 import io.realm.RealmList;
 
 public class MainActivity extends AppCompatActivity {
@@ -53,11 +54,17 @@ public class MainActivity extends AppCompatActivity {
 
         final List<Recipe> recipes = Arrays.asList(taco, quesadilla, burger);
         realm.beginTransaction();
+        for (Recipe recipe : recipes) {
+            Recipe realmRecipe = realm.where(Recipe.class).equalTo("mName", recipe.getName()).findFirst();
+            if (realmRecipe != null) {
+                recipe.setExpanded(realmRecipe.isExpanded());
+            }
+        }
         realm.insertOrUpdate(recipes);
         realm.commitTransaction();
 
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recyclerview);
-        mAdapter = new RecipeAdapter(this, realm.where(Recipe.class).findAll(), "mName");
+        mAdapter = new RecipeAdapter(realm.where(Recipe.class).findAll(), "mName");
         mAdapter.setExpandCollapseListener(new RealmExpandableRecyclerAdapter.ExpandCollapseListener() {
             @UiThread
             @Override

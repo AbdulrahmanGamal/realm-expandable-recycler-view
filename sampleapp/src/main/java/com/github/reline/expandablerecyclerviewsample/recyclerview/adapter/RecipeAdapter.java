@@ -1,23 +1,21 @@
-package com.bignerdranch.expandablerecyclerviewsample.recyclerview.adapter;
+package com.github.reline.expandablerecyclerviewsample.recyclerview.adapter;
 
-import android.content.Context;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.annotation.UiThread;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.bignerdranch.expandablerecyclerview.RealmExpandableSearchRecyclerAdapter;
 import com.bignerdranch.expandablerecyclerviewsample.R;
-import com.bignerdranch.expandablerecyclerviewsample.recyclerview.viewholders.RecipeViewHolder;
-import com.bignerdranch.expandablerecyclerviewsample.model.Ingredient;
-import com.bignerdranch.expandablerecyclerviewsample.model.Recipe;
-import com.bignerdranch.expandablerecyclerviewsample.recyclerview.viewholders.IngredientViewHolder;
+import com.github.reline.expandablerecyclerviewsample.model.Ingredient;
+import com.github.reline.expandablerecyclerviewsample.model.Recipe;
+import com.github.reline.expandablerecyclerviewsample.recyclerview.viewholders.IngredientViewHolder;
+import com.github.reline.expandablerecyclerviewsample.recyclerview.viewholders.RecipeViewHolder;
 
 import java.util.List;
 
 import io.realm.OrderedRealmCollection;
+import io.realm.RealmExpandableSearchRecyclerAdapter;
 
 public class RecipeAdapter extends RealmExpandableSearchRecyclerAdapter<Recipe, Ingredient, RecipeViewHolder, IngredientViewHolder> {
 
@@ -26,13 +24,11 @@ public class RecipeAdapter extends RealmExpandableSearchRecyclerAdapter<Recipe, 
     private static final int CHILD_VEGETARIAN = 2;
     private static final int CHILD_NORMAL = 3;
 
-    private LayoutInflater mInflater;
     private List<Recipe> mRecipeList;
 
-    public RecipeAdapter(@NonNull Context context, @Nullable OrderedRealmCollection<Recipe> recipeList, @NonNull String filterKey) {
-        super(context, recipeList, filterKey);
+    public RecipeAdapter(@NonNull OrderedRealmCollection<Recipe> recipeList, @NonNull String filterKey) {
+        super(recipeList, filterKey);
         mRecipeList = recipeList;
-        mInflater = LayoutInflater.from(context);
     }
 
     @UiThread
@@ -40,6 +36,7 @@ public class RecipeAdapter extends RealmExpandableSearchRecyclerAdapter<Recipe, 
     @Override
     public RecipeViewHolder onCreateParentViewHolder(@NonNull ViewGroup parentViewGroup, int viewType) {
         View recipeView;
+        LayoutInflater mInflater = LayoutInflater.from(parentViewGroup.getContext());
         switch (viewType) {
             default:
             case PARENT_NORMAL:
@@ -57,6 +54,7 @@ public class RecipeAdapter extends RealmExpandableSearchRecyclerAdapter<Recipe, 
     @Override
     public IngredientViewHolder onCreateChildViewHolder(@NonNull ViewGroup childViewGroup, int viewType) {
         View ingredientView;
+        LayoutInflater mInflater = LayoutInflater.from(childViewGroup.getContext());
         switch (viewType) {
             default:
             case CHILD_NORMAL:

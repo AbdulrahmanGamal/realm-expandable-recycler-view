@@ -1,6 +1,6 @@
-package com.bignerdranch.expandablerecyclerviewsample.model;
+package com.github.reline.expandablerecyclerviewsample.model;
 
-import com.bignerdranch.expandablerecyclerview.model.Parent;
+import io.realm.model.Parent;
 
 import java.util.List;
 
@@ -16,7 +16,7 @@ public class Recipe extends RealmObject implements Parent<Ingredient> {
     private boolean expanded;
 
     public Recipe() {
-        // realm constructor
+        // io.realm constructor
     }
 
     public Recipe(String name, RealmList<Ingredient> ingredients) {
@@ -38,7 +38,7 @@ public class Recipe extends RealmObject implements Parent<Ingredient> {
     }
 
     @Override
-    public boolean isInitiallyExpanded() {
+    public boolean isExpanded() {
         return expanded;
     }
 

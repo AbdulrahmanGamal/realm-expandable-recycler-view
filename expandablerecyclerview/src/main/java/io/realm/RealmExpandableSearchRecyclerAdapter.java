@@ -1,18 +1,11 @@
-package com.bignerdranch.expandablerecyclerview;
+package io.realm;
 
-import android.content.Context;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 
-import com.bignerdranch.expandablerecyclerview.model.Parent;
+import io.realm.model.Parent;
+import io.realm.model.Child;
 
-import io.realm.Case;
-import io.realm.OrderedRealmCollection;
-import io.realm.RealmObject;
-import io.realm.RealmQuery;
-import io.realm.Sort;
-
-public abstract class RealmExpandableSearchRecyclerAdapter<P extends Parent<C>, C extends RealmObject, PVH extends ParentViewHolder, CVH extends ChildViewHolder>
+public abstract class RealmExpandableSearchRecyclerAdapter<P extends Parent<C>, C extends Child, PVH extends ParentViewHolder, CVH extends ChildViewHolder>
         extends RealmExpandableRecyclerAdapter<P, C, PVH, CVH> {
 
     private OrderedRealmCollection<P> originalData;
@@ -24,22 +17,20 @@ public abstract class RealmExpandableSearchRecyclerAdapter<P extends Parent<C>, 
     private String basePredicate;
 
     public RealmExpandableSearchRecyclerAdapter(
-            @NonNull Context context,
-            @Nullable OrderedRealmCollection<P> data,
+            @NonNull OrderedRealmCollection<P> data,
             @NonNull String filterKey) {
-        this(context, data, filterKey, true, Case.INSENSITIVE, Sort.ASCENDING, filterKey, null);
+        this(data, filterKey, true, Case.INSENSITIVE, Sort.ASCENDING, filterKey, null);
     }
 
     public RealmExpandableSearchRecyclerAdapter(
-            @NonNull Context context,
-            @Nullable OrderedRealmCollection<P> data,
+            @NonNull OrderedRealmCollection<P> data,
             @NonNull String filterKey,
             boolean useContains,
             Case casing,
             Sort sortOrder,
             String sortKey,
             String basePredicate) {
-        super(context, data);
+        super(data);
         this.originalData = data;
         this.filterKey = filterKey;
         this.useContains = useContains;
@@ -50,6 +41,7 @@ public abstract class RealmExpandableSearchRecyclerAdapter<P extends Parent<C>, 
     }
 
     public void filter(String input) {
+        if (!isDataValid()) return;
         RealmQuery<P> where = originalData.where();
         OrderedRealmCollection<P> filteredData;
         if (input.isEmpty() && basePredicate != null) {
@@ -71,7 +63,7 @@ public abstract class RealmExpandableSearchRecyclerAdapter<P extends Parent<C>, 
         } else {
             filteredData = where.findAllSorted(sortKey, sortOrder);
         }
-        setParentList(filteredData, true);
+        updateData(filteredData);
     }
 
     /**
@@ -117,5 +109,9 @@ public abstract class RealmExpandableSearchRecyclerAdapter<P extends Parent<C>, 
      */
     public void setBasePredicate(String basePredicate) {
         this.basePredicate = basePredicate;
+    }
+
+    private boolean isDataValid() {
+        return originalData != null && originalData.isValid();
     }
 }

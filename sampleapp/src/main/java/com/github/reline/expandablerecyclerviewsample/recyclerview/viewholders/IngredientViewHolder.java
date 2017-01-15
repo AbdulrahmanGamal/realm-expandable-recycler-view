@@ -1,12 +1,13 @@
-package com.bignerdranch.expandablerecyclerviewsample.recyclerview.viewholders;
+package com.github.reline.expandablerecyclerviewsample.recyclerview.viewholders;
 
 import android.support.annotation.NonNull;
 import android.view.View;
 import android.widget.TextView;
 
-import com.bignerdranch.expandablerecyclerview.ChildViewHolder;
 import com.bignerdranch.expandablerecyclerviewsample.R;
-import com.bignerdranch.expandablerecyclerviewsample.model.Ingredient;
+import com.github.reline.expandablerecyclerviewsample.model.Ingredient;
+
+import io.realm.ChildViewHolder;
 
 public class IngredientViewHolder extends ChildViewHolder {
 
