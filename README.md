@@ -2,15 +2,15 @@
 
 A custom implementation of RecyclerViewAdapter which allows for an expandable view to be attached to each ViewHolder
 
-##Contributing
+## Contributing
 
-####Issues or Comments
+#### Issues or Comments
 
 If you have an idea for a feature enhancement or a bug fix, we'd love to know! We handle issue tracking using GitHub's issue system, so please add your issue/comment there.
 
 If you have a bug fix or adding functionality without affecting current API, you should target and branch off of `master`. This way, we're flexible to pull in bug fixes and additional features as soon as possible.
 
-##License
+## License
 
       The MIT License
       
