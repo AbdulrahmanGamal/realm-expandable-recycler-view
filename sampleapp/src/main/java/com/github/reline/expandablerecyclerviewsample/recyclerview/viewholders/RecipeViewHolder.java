@@ -8,7 +8,7 @@ import android.view.animation.RotateAnimation;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.bignerdranch.expandablerecyclerviewsample.R;
+import com.github.reline.expandablerecyclerviewsample.R;
 import com.github.reline.expandablerecyclerviewsample.model.Recipe;
 
 import io.realm.ParentViewHolder;

@@ -1,24 +1,46 @@
 package com.github.reline.expandablerecyclerviewsample.recyclerview.viewholders;
 
+import android.graphics.Color;
 import android.support.annotation.NonNull;
 import android.view.View;
 import android.widget.TextView;
 
-import com.bignerdranch.expandablerecyclerviewsample.R;
+import com.github.reline.expandablerecyclerviewsample.R;
 import com.github.reline.expandablerecyclerviewsample.model.Ingredient;
 
 import io.realm.ChildViewHolder;
+import io.realm.Realm;
 
-public class IngredientViewHolder extends ChildViewHolder {
+public class IngredientViewHolder extends ChildViewHolder implements View.OnClickListener {
 
-    private TextView mIngredientTextView;
+    private TextView ingredientTextView;
+    private Ingredient ingredient;
 
     public IngredientViewHolder(@NonNull View itemView) {
         super(itemView);
-        mIngredientTextView = (TextView) itemView.findViewById(R.id.ingredient_textview);
+        ingredientTextView = (TextView) itemView.findViewById(R.id.ingredient_textview);
+        itemView.setOnClickListener(this);
     }
 
     public void bind(@NonNull Ingredient ingredient) {
-        mIngredientTextView.setText(ingredient.getName());
+        this.ingredient = ingredient;
+        ingredientTextView.setText(ingredient.getName());
+        if (ingredient.isFavorite()) {
+            itemView.setBackgroundColor(Color.YELLOW);
+        } else {
+            itemView.setBackgroundColor(Color.WHITE);
+        }
+    }
+
+    @Override
+    public void onClick(View v) {
+        Realm realm = Realm.getDefaultInstance();
+        realm.executeTransaction(new Realm.Transaction() {
+            @Override
+            public void execute(Realm r) {
+                ingredient.toggleFavorite();
+            }
+        });
+        realm.close();
     }
 }

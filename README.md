@@ -1,6 +1,6 @@
-# Realm Expandable RecyclerView
+# Realm Expandable RecyclerView.Adapter
 
-A custom implementation of RealmRecyclerView which allows for an expandable view to be attached to each ViewHolder
+A custom implementation of RecyclerViewAdapter which allows for an expandable view to be attached to each ViewHolder
 
 ##Contributing
 
@@ -14,7 +14,7 @@ If you have a bug fix or adding functionality without affecting current API, you
 
       The MIT License
       
-      Copyright (c) 2015 Big Nerd Ranch
+      Copyright (c) 2017 Nathan Reline
       
       Permission is hereby granted, free of charge, to any person obtaining a copy
       of this software and associated documentation files (the "Software"), to deal

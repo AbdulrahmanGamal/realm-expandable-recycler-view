@@ -1,36 +1,35 @@
 package com.github.reline.expandablerecyclerviewsample.model;
 
+import io.realm.RealmList;
+import io.realm.RealmModel;
+import io.realm.annotations.PrimaryKey;
+import io.realm.annotations.RealmClass;
 import io.realm.model.Parent;
 
-import java.util.List;
-
-import io.realm.RealmList;
-import io.realm.RealmObject;
-import io.realm.annotations.PrimaryKey;
-
-public class Recipe extends RealmObject implements Parent<Ingredient> {
+@RealmClass
+public class Recipe implements RealmModel, Parent<Ingredient> {
 
     @PrimaryKey
-    private String mName;
-    private RealmList<Ingredient> mIngredients;
+    private String name;
+    private RealmList<Ingredient> ingredients;
     private boolean expanded;
 
     public Recipe() {
-        // io.realm constructor
+        // realm constructor
     }
 
     public Recipe(String name, RealmList<Ingredient> ingredients) {
-        mName = name;
-        mIngredients = ingredients;
+        this.name = name;
+        this.ingredients = ingredients;
     }
 
     public String getName() {
-        return mName;
+        return name;
     }
 
     @Override
-    public List<Ingredient> getChildList() {
-        return mIngredients;
+    public RealmList<Ingredient> getChildList() {
+        return ingredients;
     }
 
     public void setExpanded(boolean expanded) {
@@ -43,11 +42,11 @@ public class Recipe extends RealmObject implements Parent<Ingredient> {
     }
 
     public Ingredient getIngredient(int position) {
-        return mIngredients.get(position);
+        return ingredients.get(position);
     }
 
     public boolean isVegetarian() {
-        for (Ingredient ingredient : mIngredients) {
+        for (Ingredient ingredient : ingredients) {
             if (!ingredient.isVegetarian()) {
                 return false;
             }

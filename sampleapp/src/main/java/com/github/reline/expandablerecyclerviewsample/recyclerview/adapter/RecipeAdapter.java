@@ -6,7 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.bignerdranch.expandablerecyclerviewsample.R;
+import com.github.reline.expandablerecyclerviewsample.R;
 import com.github.reline.expandablerecyclerviewsample.model.Ingredient;
 import com.github.reline.expandablerecyclerviewsample.model.Recipe;
 import com.github.reline.expandablerecyclerviewsample.recyclerview.viewholders.IngredientViewHolder;
@@ -24,11 +24,11 @@ public class RecipeAdapter extends RealmExpandableSearchRecyclerAdapter<Recipe, 
     private static final int CHILD_VEGETARIAN = 2;
     private static final int CHILD_NORMAL = 3;
 
-    private List<Recipe> mRecipeList;
+    private List<Recipe> recipeList;
 
     public RecipeAdapter(@NonNull OrderedRealmCollection<Recipe> recipeList, @NonNull String filterKey) {
         super(recipeList, filterKey);
-        mRecipeList = recipeList;
+        this.recipeList = recipeList;
     }
 
     @UiThread
@@ -81,7 +81,7 @@ public class RecipeAdapter extends RealmExpandableSearchRecyclerAdapter<Recipe, 
 
     @Override
     public int getParentViewType(int parentPosition) {
-        if (mRecipeList.get(parentPosition).isVegetarian()) {
+        if (recipeList.get(parentPosition).isVegetarian()) {
             return PARENT_VEGETARIAN;
         } else {
             return PARENT_NORMAL;
@@ -90,7 +90,7 @@ public class RecipeAdapter extends RealmExpandableSearchRecyclerAdapter<Recipe, 
 
     @Override
     public int getChildViewType(int parentPosition, int childPosition) {
-        Ingredient ingredient = mRecipeList.get(parentPosition).getIngredient(childPosition);
+        Ingredient ingredient = recipeList.get(parentPosition).getIngredient(childPosition);
         if (ingredient.isVegetarian()) {
             return CHILD_VEGETARIAN;
         } else {

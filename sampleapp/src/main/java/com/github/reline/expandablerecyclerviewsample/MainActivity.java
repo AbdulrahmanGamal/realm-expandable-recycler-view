@@ -8,7 +8,6 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.widget.Toast;
 
-import com.bignerdranch.expandablerecyclerviewsample.R;
 import com.github.reline.expandablerecyclerviewsample.model.Ingredient;
 import com.github.reline.expandablerecyclerviewsample.model.Recipe;
 import com.github.reline.expandablerecyclerviewsample.recyclerview.adapter.RecipeAdapter;
@@ -24,7 +23,7 @@ public class MainActivity extends AppCompatActivity {
 
     private Realm realm;
 
-    private RecipeAdapter mAdapter;
+    private RecipeAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
         final List<Recipe> recipes = Arrays.asList(taco, quesadilla, burger);
         realm.beginTransaction();
         for (Recipe recipe : recipes) {
-            Recipe realmRecipe = realm.where(Recipe.class).equalTo("mName", recipe.getName()).findFirst();
+            Recipe realmRecipe = realm.where(Recipe.class).equalTo("name", recipe.getName()).findFirst();
             if (realmRecipe != null) {
                 recipe.setExpanded(realmRecipe.isExpanded());
             }
@@ -64,12 +63,12 @@ public class MainActivity extends AppCompatActivity {
         realm.commitTransaction();
 
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recyclerview);
-        mAdapter = new RecipeAdapter(realm.where(Recipe.class).findAll(), "mName");
-        mAdapter.setExpandCollapseListener(new RealmExpandableRecyclerAdapter.ExpandCollapseListener() {
+        adapter = new RecipeAdapter(realm.where(Recipe.class).findAll(), "name");
+        adapter.setExpandCollapseListener(new RealmExpandableRecyclerAdapter.ExpandCollapseListener() {
             @UiThread
             @Override
             public void onParentExpanded(int parentPosition) {
-                Recipe expandedRecipe = mAdapter.getItem(parentPosition);
+                Recipe expandedRecipe = adapter.getItem(parentPosition);
 
                 String toastMsg = getResources().getString(R.string.expanded, expandedRecipe.getName());
                 Toast.makeText(MainActivity.this,
@@ -81,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
             @UiThread
             @Override
             public void onParentCollapsed(int parentPosition) {
-                Recipe collapsedRecipe = mAdapter.getItem(parentPosition);
+                Recipe collapsedRecipe = adapter.getItem(parentPosition);
 
                 String toastMsg = getResources().getString(R.string.collapsed, collapsedRecipe.getName());
                 Toast.makeText(MainActivity.this,
@@ -91,7 +90,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        recyclerView.setAdapter(mAdapter);
+        recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         SearchView searchView = (SearchView) findViewById(R.id.searchview);
@@ -103,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                mAdapter.filter(newText);
+                adapter.filter(newText);
                 return true;
             }
         });

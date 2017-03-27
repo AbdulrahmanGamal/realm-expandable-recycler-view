@@ -5,15 +5,17 @@ import android.support.annotation.UiThread;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
+import io.realm.model.Child;
+
 /**
  * ViewHolder for a child list item.
  * <p>
  * The user should extend this class and implement as they wish for their
  * child list item.
  */
-public class ChildViewHolder<C> extends RecyclerView.ViewHolder {
-    C mChild;
-    RealmExpandableRecyclerAdapter mExpandableAdapter;
+public class ChildViewHolder<C extends Child> extends RecyclerView.ViewHolder {
+    C child;
+    RealmExpandableRecyclerAdapter expandableAdapter;
 
     /**
      * Default constructor.
@@ -29,7 +31,7 @@ public class ChildViewHolder<C> extends RecyclerView.ViewHolder {
      */
     @UiThread
     public C getChild() {
-        return mChild;
+        return child;
     }
 
     /**
@@ -43,11 +45,11 @@ public class ChildViewHolder<C> extends RecyclerView.ViewHolder {
     @UiThread
     public int getParentAdapterPosition() {
         int flatPosition = getAdapterPosition();
-        if (mExpandableAdapter == null || flatPosition == RecyclerView.NO_POSITION) {
+        if (expandableAdapter == null || flatPosition == RecyclerView.NO_POSITION) {
             return RecyclerView.NO_POSITION;
         }
 
-        return mExpandableAdapter.getNearestParentPosition(flatPosition);
+        return expandableAdapter.getNearestParentPosition(flatPosition);
     }
 
     /**
@@ -61,10 +63,10 @@ public class ChildViewHolder<C> extends RecyclerView.ViewHolder {
     @UiThread
     public int getChildAdapterPosition() {
         int flatPosition = getAdapterPosition();
-        if (mExpandableAdapter == null || flatPosition == RecyclerView.NO_POSITION) {
+        if (expandableAdapter == null || flatPosition == RecyclerView.NO_POSITION) {
             return RecyclerView.NO_POSITION;
         }
 
-        return mExpandableAdapter.getChildPosition(flatPosition);
+        return expandableAdapter.getChildPosition(flatPosition);
     }
 }

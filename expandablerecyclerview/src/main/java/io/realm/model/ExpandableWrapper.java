@@ -13,12 +13,12 @@ import io.realm.RealmModel;
  */
 public class ExpandableWrapper<P extends Parent<C>, C extends Child> implements RealmModel {
 
-    private P mParent;
-    private C mChild;
-    private boolean mWrappedParent;
-    private boolean mExpanded;
+    private P parent;
+    private C child;
+    private boolean wrappedParent;
+    private boolean expanded;
 
-    private RealmList<ExpandableWrapper<P, C>> mWrappedChildList;
+    private RealmList<ExpandableWrapper<P, C>> wrappedChildList;
 
     /**
      * Constructor to wrap a parent object of type {@link P}.
@@ -26,11 +26,11 @@ public class ExpandableWrapper<P extends Parent<C>, C extends Child> implements 
      * @param parent The parent object to wrap
      */
     public ExpandableWrapper(@NonNull P parent) {
-        mParent = parent;
-        mWrappedParent = true;
-        mExpanded = false;
+        this.parent = parent;
+        wrappedParent = true;
+        expanded = false;
 
-        mWrappedChildList = generateChildItemList(parent);
+        wrappedChildList = generateChildItemList(parent);
     }
 
     /**
@@ -39,34 +39,34 @@ public class ExpandableWrapper<P extends Parent<C>, C extends Child> implements 
      * @param child The child object to wrap
      */
     public ExpandableWrapper(@NonNull C child) {
-        mChild = child;
-        mWrappedParent = false;
-        mExpanded = false;
+        this.child = child;
+        wrappedParent = false;
+        expanded = false;
     }
 
     public P getParent() {
-        return mParent;
+        return parent;
     }
 
     public void setParent(@NonNull P parent) {
-        mParent = parent;
-        mWrappedChildList = generateChildItemList(parent);
+        this.parent = parent;
+        wrappedChildList = generateChildItemList(parent);
     }
 
     public C getChild() {
-        return mChild;
+        return child;
     }
 
     public boolean isExpanded() {
-        return mExpanded;
+        return expanded;
     }
 
     public void setExpanded(boolean expanded) {
-        mExpanded = expanded;
+        this.expanded = expanded;
     }
 
     public boolean isParent() {
-        return mWrappedParent;
+        return wrappedParent;
     }
 
     /**
@@ -74,11 +74,11 @@ public class ExpandableWrapper<P extends Parent<C>, C extends Child> implements 
      * @throws IllegalStateException If a parent isn't being wrapped
      */
     public boolean isParentInitiallyExpanded() {
-        if (!mWrappedParent) {
+        if (!wrappedParent) {
             throw new IllegalStateException("Parent not wrapped");
         }
 
-        return mParent.isExpanded();
+        return parent.isExpanded();
     }
 
     /**
@@ -86,11 +86,11 @@ public class ExpandableWrapper<P extends Parent<C>, C extends Child> implements 
      * @throws IllegalStateException If a parent isn't being wrapped
      */
     public RealmList<ExpandableWrapper<P, C>> getWrappedChildList() {
-        if (!mWrappedParent) {
+        if (!wrappedParent) {
             throw new IllegalStateException("Parent not wrapped");
         }
 
-        return mWrappedChildList;
+        return wrappedChildList;
     }
 
     private RealmList<ExpandableWrapper<P, C>> generateChildItemList(P parentListItem) {
@@ -110,16 +110,16 @@ public class ExpandableWrapper<P extends Parent<C>, C extends Child> implements 
 
         final ExpandableWrapper<?, ?> that = (ExpandableWrapper<?, ?>) o;
 
-        if (mParent != null ? !mParent.equals(that.mParent) : that.mParent != null)
+        if (parent != null ? !parent.equals(that.parent) : that.parent != null)
             return false;
-        return mChild != null ? mChild.equals(that.mChild) : that.mChild == null;
+        return child != null ? child.equals(that.child) : that.child == null;
 
     }
 
     @Override
     public int hashCode() {
-        int result = mParent != null ? mParent.hashCode() : 0;
-        result = 31 * result + (mChild != null ? mChild.hashCode() : 0);
+        int result = parent != null ? parent.hashCode() : 0;
+        result = 31 * result + (child != null ? child.hashCode() : 0);
         return result;
     }
 }

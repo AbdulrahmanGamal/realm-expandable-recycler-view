@@ -23,10 +23,10 @@ import static android.support.v7.widget.RecyclerView.NO_POSITION;
  */
 public class ParentViewHolder<P extends Parent<C>, C extends Child> extends RecyclerView.ViewHolder implements View.OnClickListener {
     @Nullable
-    private ParentViewHolderExpandCollapseListener mParentViewHolderExpandCollapseListener;
-    private boolean mExpanded;
-    P mParent;
-    RealmExpandableRecyclerAdapter mExpandableAdapter;
+    private ParentViewHolderExpandCollapseListener parentViewHolderExpandCollapseListener;
+    private boolean expanded;
+    P parent;
+    RealmExpandableRecyclerAdapter expandableAdapter;
 
     /**
      * Empowers {@link RealmExpandableRecyclerAdapter}
@@ -59,7 +59,7 @@ public class ParentViewHolder<P extends Parent<C>, C extends Child> extends Recy
     @UiThread
     public ParentViewHolder(@NonNull View itemView) {
         super(itemView);
-        mExpanded = false;
+        expanded = false;
     }
 
     /**
@@ -67,7 +67,7 @@ public class ParentViewHolder<P extends Parent<C>, C extends Child> extends Recy
      */
     @UiThread
     public P getParent() {
-        return mParent;
+        return parent;
     }
 
     /**
@@ -85,7 +85,7 @@ public class ParentViewHolder<P extends Parent<C>, C extends Child> extends Recy
             return flatPosition;
         }
 
-        return mExpandableAdapter.getNearestParentPosition(flatPosition);
+        return expandableAdapter.getNearestParentPosition(flatPosition);
     }
 
     /**
@@ -105,7 +105,7 @@ public class ParentViewHolder<P extends Parent<C>, C extends Child> extends Recy
      */
     @UiThread
     public boolean isExpanded() {
-        return mExpanded;
+        return expanded;
     }
 
     /**
@@ -116,7 +116,7 @@ public class ParentViewHolder<P extends Parent<C>, C extends Child> extends Recy
      */
     @UiThread
     public void setExpanded(boolean expanded) {
-        mExpanded = expanded;
+        this.expanded = expanded;
     }
 
     /**
@@ -140,8 +140,8 @@ public class ParentViewHolder<P extends Parent<C>, C extends Child> extends Recy
      * @param parentViewHolderExpandCollapseListener The {@link ParentViewHolderExpandCollapseListener} to set on the {@link ParentViewHolder}
      */
     @UiThread
-    void setParentViewHolderExpandCollapseListener(ParentViewHolderExpandCollapseListener parentViewHolderExpandCollapseListener) {
-        mParentViewHolderExpandCollapseListener = parentViewHolderExpandCollapseListener;
+    void setParentViewHolderExpandCollapseListener(@Nullable ParentViewHolderExpandCollapseListener parentViewHolderExpandCollapseListener) {
+        this.parentViewHolderExpandCollapseListener = parentViewHolderExpandCollapseListener;
     }
 
     /**
@@ -155,7 +155,7 @@ public class ParentViewHolder<P extends Parent<C>, C extends Child> extends Recy
     @Override
     @UiThread
     public void onClick(View v) {
-        if (mExpanded) {
+        if (expanded) {
             collapseView();
         } else {
             expandView();
@@ -182,10 +182,10 @@ public class ParentViewHolder<P extends Parent<C>, C extends Child> extends Recy
      */
     @UiThread
     protected void expandView() {
-        if (mParentViewHolderExpandCollapseListener != null) {
+        if (parentViewHolderExpandCollapseListener != null) {
             int adapterPosition = getAdapterPosition();
             if (adapterPosition == NO_POSITION) return;
-            mParentViewHolderExpandCollapseListener.onParentExpanded(adapterPosition);
+            parentViewHolderExpandCollapseListener.onParentExpanded(adapterPosition);
         }
 
         setExpanded(true);
@@ -197,10 +197,10 @@ public class ParentViewHolder<P extends Parent<C>, C extends Child> extends Recy
      */
     @UiThread
     protected void collapseView() {
-        if (mParentViewHolderExpandCollapseListener != null) {
+        if (parentViewHolderExpandCollapseListener != null) {
             int adapterPosition = getAdapterPosition();
             if (adapterPosition == NO_POSITION) return;
-            mParentViewHolderExpandCollapseListener.onParentCollapsed(adapterPosition);
+            parentViewHolderExpandCollapseListener.onParentCollapsed(adapterPosition);
         }
 
         setExpanded(false);
