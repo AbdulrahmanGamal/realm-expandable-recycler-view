@@ -16,10 +16,6 @@ import static android.support.v7.widget.RecyclerView.NO_POSITION;
  * ViewHolder for a {@link Parent}
  * Keeps track of expanded state and holds callbacks which can be used to
  * trigger expansion-based events.
- *
- * @author Ryan Brooks
- * @version 1.0
- * @since 5/27/2015
  */
 public class ParentViewHolder<P extends Parent<C>, C extends Child> extends RecyclerView.ViewHolder implements View.OnClickListener {
     @Nullable

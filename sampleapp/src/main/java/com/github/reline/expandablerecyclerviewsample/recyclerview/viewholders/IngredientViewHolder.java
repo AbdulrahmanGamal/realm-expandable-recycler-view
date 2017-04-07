@@ -2,6 +2,7 @@ package com.github.reline.expandablerecyclerviewsample.recyclerview.viewholders;
 
 import android.graphics.Color;
 import android.support.annotation.NonNull;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -34,11 +35,12 @@ public class IngredientViewHolder extends ChildViewHolder implements View.OnClic
 
     @Override
     public void onClick(View v) {
+        Log.i("Realm", "onClick: ingredient");
         Realm realm = Realm.getDefaultInstance();
         realm.executeTransaction(new Realm.Transaction() {
             @Override
             public void execute(Realm r) {
-                ingredient.toggleFavorite();
+                ingredient.setFavorite(!ingredient.isFavorite());
             }
         });
         realm.close();

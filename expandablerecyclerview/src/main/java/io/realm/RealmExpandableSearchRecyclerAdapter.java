@@ -8,6 +8,7 @@ import io.realm.model.Child;
 public abstract class RealmExpandableSearchRecyclerAdapter<P extends Parent<C>, C extends Child, PVH extends ParentViewHolder, CVH extends ChildViewHolder>
         extends RealmExpandableRecyclerAdapter<P, C, PVH, CVH> {
 
+    @NonNull
     private OrderedRealmCollection<P> originalData;
     private String filterKey;
     private boolean useContains;
@@ -112,6 +113,6 @@ public abstract class RealmExpandableSearchRecyclerAdapter<P extends Parent<C>, 
     }
 
     private boolean isDataValid() {
-        return originalData != null && originalData.isValid();
+        return originalData.isValid();
     }
 }

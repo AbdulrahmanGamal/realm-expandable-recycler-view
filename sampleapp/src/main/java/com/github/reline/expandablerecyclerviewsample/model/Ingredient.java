@@ -30,12 +30,16 @@ public class Ingredient implements RealmModel, Child {
         return vegetarian;
     }
 
-    public void toggleFavorite() {
-        favorite = !favorite;
+    public void setFavorite(boolean favorite) {
+        this.favorite = favorite;
     }
 
     public boolean isFavorite() {
         return favorite;
     }
 
+    @Override
+    public String toString() {
+        return "name = [" + name + "], vegetarian = [" + vegetarian + "], favorite = [" + favorite + "]";
+    }
 }

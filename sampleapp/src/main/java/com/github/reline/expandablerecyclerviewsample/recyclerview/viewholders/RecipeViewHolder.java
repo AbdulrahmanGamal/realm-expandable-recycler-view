@@ -1,8 +1,9 @@
 package com.github.reline.expandablerecyclerviewsample.recyclerview.viewholders;
 
-import android.annotation.SuppressLint;
+import android.graphics.Color;
 import android.os.Build;
 import android.support.annotation.NonNull;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.RotateAnimation;
 import android.widget.ImageView;
@@ -20,38 +21,60 @@ public class RecipeViewHolder extends ParentViewHolder {
     private static final float ROTATED_POSITION = 180f;
 
     @NonNull
-    private final ImageView mArrowExpandImageView;
-    private TextView mRecipeTextView;
+    private final ImageView arrowExpandImageView;
+    private TextView recipeTextView;
+    private TextView starredIngredientCount;
+    private TextView ingredientCount;
 
     private Recipe recipe;
 
     public RecipeViewHolder(@NonNull View itemView) {
         super(itemView);
-        mRecipeTextView = (TextView) itemView.findViewById(R.id.recipe_textview);
-
-        mArrowExpandImageView = (ImageView) itemView.findViewById(R.id.arrow_expand_imageview);
+        recipeTextView = (TextView) itemView.findViewById(R.id.recipe_textview);
+        arrowExpandImageView = (ImageView) itemView.findViewById(R.id.arrow_expand_imageview);
+        starredIngredientCount = (TextView) itemView.findViewById(R.id.starred_ingredient_count);
+        ingredientCount = (TextView) itemView.findViewById(R.id.ingredient_count);
     }
 
-    public void bind(@NonNull Recipe recipe) {
-        this.recipe = recipe;
-        mRecipeTextView.setText(recipe.getName());
+    public void bind(@NonNull Recipe r) {
+        this.recipe = r;
+        recipeTextView.setText(r.getName());
+        starredIngredientCount.setText(String.valueOf(recipe.getFavoritesCount()));
+        ingredientCount.setText(String.valueOf(recipe.getIngredientsCount()));
+
+        if (r.isFavorite()) {
+            itemView.setBackgroundColor(Color.YELLOW);
+        } else {
+            itemView.setBackgroundColor(Color.WHITE);
+        }
+
+        itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.i("Realm", "onClick: recipe");
+                Realm realm = Realm.getDefaultInstance();
+                realm.beginTransaction();
+                recipe.setFavorite(!recipe.isFavorite());
+                realm.commitTransaction();
+                realm.close();
+            }
+        });
     }
 
-    @SuppressLint("NewApi")
     @Override
     public void setExpanded(boolean expanded) {
         super.setExpanded(expanded);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             if (expanded) {
-                mArrowExpandImageView.setRotation(ROTATED_POSITION);
+                arrowExpandImageView.setRotation(ROTATED_POSITION);
             } else {
-                mArrowExpandImageView.setRotation(INITIAL_POSITION);
+                arrowExpandImageView.setRotation(INITIAL_POSITION);
             }
         }
     }
 
     @Override
-    public void onExpansionToggled(boolean expanded) {
+    public void onExpansionToggled(final boolean expanded) {
         super.onExpansionToggled(expanded);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             RotateAnimation rotateAnimation;
@@ -69,27 +92,22 @@ public class RecipeViewHolder extends ParentViewHolder {
 
             rotateAnimation.setDuration(200);
             rotateAnimation.setFillAfter(true);
-            mArrowExpandImageView.startAnimation(rotateAnimation);
+            arrowExpandImageView.startAnimation(rotateAnimation);
         }
-    }
 
-    @Override
-    protected void expandView() {
-        super.expandView();
-        saveExpandedState(true);
-    }
-
-    @Override
-    protected void collapseView() {
-        super.collapseView();
-        saveExpandedState(false);
-    }
-
-    private void saveExpandedState(boolean expanded) {
         Realm realm = Realm.getDefaultInstance();
-        realm.beginTransaction();
-        recipe.setExpanded(expanded);
-        realm.commitTransaction();
+        realm.executeTransaction(new Realm.Transaction() {
+            @Override
+            public void execute(Realm realm) {
+                recipe.setExpanded(!expanded);
+            }
+        });
         realm.close();
     }
+
+    @Override
+    public void setMainItemClickToExpand() {
+        arrowExpandImageView.setOnClickListener(this);
+    }
+
 }

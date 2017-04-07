@@ -3,6 +3,7 @@ package io.realm;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.UiThread;
+import android.support.v4.util.SimpleArrayMap;
 import android.support.v7.widget.RecyclerView;
 import android.util.SparseArray;
 import android.view.ViewGroup;
@@ -29,78 +30,10 @@ public abstract class RealmExpandableRecyclerAdapter<P extends Parent<C>, C exte
      */
     public static final int TYPE_CHILD = 1;
 
-    private final OrderedRealmCollectionChangeListener parentListener;
-
-    private final SparseArray<OrderedRealmCollectionChangeListener<RealmList<C>>> childListeners = new SparseArray<>();
-
-    private OrderedRealmCollectionChangeListener createParentListener() {
-        return new OrderedRealmCollectionChangeListener() {
-            @Override
-            public void onChange(Object collection, OrderedCollectionChangeSet changeSet) {
-                // null Changes means the async query returns the first time.
-                if (changeSet == null) {
-                    notifyDataSetChanged();
-                    return;
-                }
-                // For deletions, the adapter has to be notified in reverse order.
-                OrderedCollectionChangeSet.Range[] deletions = changeSet.getDeletionRanges();
-                for (int i = deletions.length - 1; i >= 0; i--) {
-                    OrderedCollectionChangeSet.Range range = deletions[i];
-                    int flatParentIndex = getFlatParentPosition(range.startIndex);
-                    // remove the child listeners associated with the specified parent
-                    for (int j = range.length - 1; j >= 0; j--) {
-                        int parentIndex = flatParentIndex + j;
-                        removeChildListener(parentIndex);
-                    }
-                    notifyItemRangeRemoved(flatParentIndex, range.length);
-                }
-
-                OrderedCollectionChangeSet.Range[] insertions = changeSet.getInsertionRanges();
-                for (OrderedCollectionChangeSet.Range range : insertions) {
-                    int flatParentIndex = getFlatParentPosition(range.startIndex);
-                    notifyItemRangeInserted(flatParentIndex, range.length);
-                }
-
-                OrderedCollectionChangeSet.Range[] modifications = changeSet.getChangeRanges();
-                for (OrderedCollectionChangeSet.Range range : modifications) {
-                    int flatParentIndex = getFlatParentPosition(range.startIndex);
-                    notifyItemRangeChanged(flatParentIndex, range.length);
-                }
-            }
-        };
-    }
-
-    private OrderedRealmCollectionChangeListener<RealmList<C>> createChildListener(final int parentIndex) {
-        return new OrderedRealmCollectionChangeListener<RealmList<C>>() {
-            @Override
-            public void onChange(RealmList<C> collection, OrderedCollectionChangeSet changeSet) {
-                // null Changes means the async query returns the first time.
-                if (changeSet == null) {
-                    notifyDataSetChanged();
-                    return;
-                }
-
-                int flatStartIndex = getFlatParentPosition(parentIndex) + 1;
-
-                // For deletions, the adapter has to be notified in reverse order.
-                OrderedCollectionChangeSet.Range[] deletions = changeSet.getDeletionRanges();
-                for (int i = deletions.length - 1; i >= 0; i--) {
-                    OrderedCollectionChangeSet.Range range = deletions[i];
-                    notifyItemRangeRemoved(flatStartIndex + range.startIndex, range.length);
-                }
-
-                OrderedCollectionChangeSet.Range[] insertions = changeSet.getInsertionRanges();
-                for (OrderedCollectionChangeSet.Range range : insertions) {
-                    notifyItemRangeInserted(flatStartIndex + range.startIndex, range.length);
-                }
-
-                OrderedCollectionChangeSet.Range[] modifications = changeSet.getChangeRanges();
-                for (OrderedCollectionChangeSet.Range range : modifications) {
-                    notifyItemRangeChanged(flatStartIndex + range.startIndex, range.length);
-                }
-            }
-        };
-    }
+    private final OrderedRealmCollectionChangeListener parentCollectionListener;
+    private final SparseArray<RealmObjectChangeListener<P>> parentListeners = new SparseArray<>();
+    private final SimpleArrayMap<RealmList<C>, OrderedRealmCollectionChangeListener<RealmList<C>>> childCollectionListeners = new SimpleArrayMap<>();
+    private final SparseArray<RealmObjectChangeListener<C>> childListeners = new SparseArray<>();
 
     /**
      * A {@link List} of all currently expanded parents and their children, in order.
@@ -108,7 +41,7 @@ public abstract class RealmExpandableRecyclerAdapter<P extends Parent<C>, C exte
      * available in {@link RealmExpandableRecyclerAdapter}.
      */
     @NonNull
-    protected RealmList<ExpandableWrapper<P, C>> flatItemList;
+    protected List<ExpandableWrapper<P, C>> flatItemList;
 
     @NonNull
     private OrderedRealmCollection<P> parentList;
@@ -148,9 +81,13 @@ public abstract class RealmExpandableRecyclerAdapter<P extends Parent<C>, C exte
      *                       adapter is linked to
      */
     public RealmExpandableRecyclerAdapter(@NonNull OrderedRealmCollection<P> parentList) {
+        if (!parentList.isManaged()) {
+            throw new IllegalStateException("Only use this adapter with managed RealmCollection, " +
+            "for un-managed lists you can just use the RecyclerView.Adapter");
+        }
         this.parentList = parentList;
         flatItemList = generateFlattenedParentChildList(parentList);
-        parentListener = createParentListener();
+        parentCollectionListener = createParentCollectionListener();
     }
 
     /**
@@ -165,53 +102,177 @@ public abstract class RealmExpandableRecyclerAdapter<P extends Parent<C>, C exte
         return parentList.isValid() ? parentList.get(index) : null;
     }
 
-    private void addParentListener(@NonNull OrderedRealmCollection<P> data) {
+    private void addParentCollectionListener(@NonNull OrderedRealmCollection<P> data) {
         if (data instanceof RealmResults) {
             RealmResults<P> results = (RealmResults<P>) data;
             //noinspection unchecked
-            results.addChangeListener(parentListener);
+            results.addChangeListener(parentCollectionListener);
         } else if (data instanceof RealmList) {
             RealmList<P> list = (RealmList<P>) data;
             //noinspection unchecked
-            list.addChangeListener(parentListener);
+            list.addChangeListener(parentCollectionListener);
         } else {
             throw new IllegalArgumentException("RealmCollection not supported: " + data.getClass());
         }
+
+        for (int i = 0, size = data.size(); i < size; i++) {
+            addParentListener(data.get(i), i);
+        }
     }
 
-    private void removeParentListener(@NonNull OrderedRealmCollection<P> data) {
+    private void removeParentCollectionListener(@NonNull OrderedRealmCollection<P> data) {
         if (data instanceof RealmResults) {
             RealmResults<P> realmResults = (RealmResults<P>) data;
             //noinspection unchecked
-            realmResults.removeChangeListener(parentListener);
+            realmResults.removeChangeListener(parentCollectionListener);
         } else if (data instanceof RealmList) {
             RealmList<P> list = (RealmList<P>) data;
             //noinspection unchecked
-            list.removeChangeListener(parentListener);
+            list.removeChangeListener(parentCollectionListener);
         } else {
             throw new IllegalArgumentException("RealmCollection not supported: " + data.getClass());
         }
-    }
 
-    private void removeChildListeners() {
-        for (int i = childListeners.size() - 1; i >= 0; i--) {
-            int key = childListeners.keyAt(i);
-            removeChildListener(key);
+        for (int i = 0, size = data.size(); i < size; i++) {
+            removeParentListener(data.get(i), i);
         }
     }
 
-    private void addChildListener(int parentIndex) {
-        RealmList<C> data = parentList.get(parentIndex).getChildList();
-        OrderedRealmCollectionChangeListener<RealmList<C>> childListener = createChildListener(parentIndex);
-        childListeners.put(parentIndex, childListener);
-        data.addChangeListener(childListener);
+    private void addParentListener(P parent, int index) {
+        RealmObjectChangeListener<P> parentListener = createParentListener(index);
+        RealmObject.addChangeListener(parent, parentListener);
+        parentListeners.put(index, parentListener);
     }
 
-    private void removeChildListener(int parentIndex) {
+    private void removeParentListener(P parent, int index) {
+        RealmObjectChangeListener parentListener = parentListeners.get(index);
+        RealmObject.removeChangeListener(parent, parentListener);
+        parentListeners.remove(index);
+    }
+
+    private void addChildCollectionListener(int parentIndex) {
         RealmList<C> data = parentList.get(parentIndex).getChildList();
-        OrderedRealmCollectionChangeListener<RealmList<C>> childListener = childListeners.get(parentIndex);
-        data.removeChangeListener(childListener);
-        childListeners.remove(parentIndex);
+        OrderedRealmCollectionChangeListener<RealmList<C>> childListener = createChildCollectionListener(parentIndex);
+        childCollectionListeners.put(data, childListener);
+        data.addChangeListener(childListener);
+        for (int i = 0, size = data.size(); i < size; i++) {
+            C child = data.get(i);
+            addChildListener(child, parentIndex, i);
+        }
+    }
+
+    private void addChildCollectionListeners() {
+        for (int i = 0, size = parentList.size(); i < size; i++) {
+            addChildCollectionListener(i);
+        }
+    }
+
+    private void removeChildCollectionListener(int parentIndex) {
+        RealmList<C> data = parentList.get(parentIndex).getChildList();
+        OrderedRealmCollectionChangeListener childListener = childCollectionListeners.valueAt(parentIndex);
+        // null check to allow safe listener refreshes
+        if (childListener != null) {
+            //noinspection unchecked
+            data.removeChangeListener(childListener);
+            childCollectionListeners.removeAt(parentIndex);
+            for (int i = 0, size = data.size(); i < size; i++) {
+                C child = data.get(i);
+                removeChildListener(child, parentIndex, i);
+            }
+        }
+    }
+
+    private void removeChildCollectionListeners() {
+        for (int i = childCollectionListeners.size() - 1; i >= 0; i--) {
+            removeChildCollectionListener(i);
+        }
+    }
+
+    private void addChildListener(C child, int parentIndex, int childIndex) {
+        RealmObjectChangeListener<C> childListener = createChildListener(parentIndex, childIndex);
+        RealmObject.addChangeListener(child, childListener);
+        childListeners.put(getFlatParentPosition(parentIndex) + childIndex, childListener);
+    }
+
+    private void removeChildListener(C child, int parentIndex, int childIndex) {
+        int index = getFlatParentPosition(parentIndex) + childIndex;
+        RealmObjectChangeListener childListener = childListeners.get(index);
+        RealmObject.removeChangeListener(child, childListener);
+        childListeners.remove(index);
+    }
+
+    private OrderedRealmCollectionChangeListener<OrderedRealmCollection<P>> createParentCollectionListener() {
+        return new OrderedRealmCollectionChangeListener<OrderedRealmCollection<P>>() {
+            @Override
+            public void onChange(OrderedRealmCollection<P> collection, OrderedCollectionChangeSet changeSet) {
+                // null Changes means the async query returns the first time.
+                if (changeSet == null) {
+                    notifyDataSetChanged();
+                    return;
+                }
+
+                // Insertions need to be notified in reverse order because they are incremental
+                OrderedCollectionChangeSet.Range[] insertions = changeSet.getInsertionRanges();
+                for (OrderedCollectionChangeSet.Range range : insertions) {
+                    for (int i = range.length - 1; i >= 0; i--) {
+                        int parentPosition = range.startIndex + i;
+                        int flatParentPosition = getFlatParentPosition(parentPosition);
+                        notifyItemInserted(flatParentPosition);
+                        if (parentList.get(parentPosition).isExpanded()) {
+                            addChildCollectionListener(parentPosition);
+                        }
+                    }
+                }
+            }
+        };
+    }
+
+    private OrderedRealmCollectionChangeListener<RealmList<C>> createChildCollectionListener(final int parentIndex) {
+        return new OrderedRealmCollectionChangeListener<RealmList<C>>() {
+            @Override
+            public void onChange(RealmList<C> collection, OrderedCollectionChangeSet changeSet) {
+                // null Changes means the async query returns the first time.
+                if (changeSet == null) {
+                    notifyDataSetChanged();
+                    return;
+                }
+
+                int flatStartPosition = getFlatParentPosition(parentIndex) + 1;
+                OrderedCollectionChangeSet.Range[] insertions = changeSet.getInsertionRanges();
+                for (OrderedCollectionChangeSet.Range range : insertions) {
+                    notifyItemRangeInserted(flatStartPosition + range.startIndex, range.length);
+                }
+            }
+        };
+    }
+
+    private RealmObjectChangeListener<P> createParentListener(final int index) {
+        return new RealmObjectChangeListener<P>() {
+            @Override
+            public void onChange(P object, ObjectChangeSet changeSet) {
+                int flatPosition = getFlatParentPosition(index);
+                if (changeSet.isDeleted()) {
+                    notifyItemRemoved(flatPosition);
+                    removeChildCollectionListener(index);
+                    return;
+                }
+                notifyItemChanged(flatPosition);
+            }
+        };
+    }
+
+    private RealmObjectChangeListener<C> createChildListener(final int parentIndex, final int childIndex) {
+        return new RealmObjectChangeListener<C>() {
+            @Override
+            public void onChange(C object, ObjectChangeSet changeSet) {
+                int flatPosition = getFlatParentPosition(parentIndex) + childIndex + 1;
+                if (changeSet.isDeleted()) {
+                    notifyItemRemoved(flatPosition);
+                    return;
+                }
+                notifyItemChanged(flatPosition);
+            }
+        };
     }
 
     /**
@@ -342,8 +403,7 @@ public abstract class RealmExpandableRecyclerAdapter<P extends Parent<C>, C exte
     @Override
     @UiThread
     public int getItemCount() {
-        //noinspection ConstantConditions
-        return flatItemList.isValid() ? flatItemList.size() : 0;
+        return flatItemList.size();
     }
 
     /**
@@ -433,12 +493,19 @@ public abstract class RealmExpandableRecyclerAdapter<P extends Parent<C>, C exte
      * LayoutManagers will be forced to fully rebind and relayout all visible views.</p>
      */
     @UiThread
-    public void updateData(@NonNull OrderedRealmCollection<P> parentList) {
-        removeParentListener(this.parentList);
-        removeChildListeners();
-        this.parentList = parentList;
-        addParentListener(this.parentList);
+    public void updateData(@NonNull OrderedRealmCollection<P> data) {
+        if (isDataValid()) {
+            removeChildCollectionListeners();
+            removeParentCollectionListener(parentList);
+            addParentCollectionListener(data);
+            addChildCollectionListeners();
+        }
+        parentList = data;
         notifyParentDataSetChanged();
+    }
+
+    private boolean isDataValid() {
+        return parentList.isValid();
     }
 
     /**
@@ -452,7 +519,10 @@ public abstract class RealmExpandableRecyclerAdapter<P extends Parent<C>, C exte
     @Override
     @UiThread
     public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
-        addParentListener(parentList);
+        if (isDataValid()) {
+            addParentCollectionListener(parentList);
+            addChildCollectionListeners();
+        }
     }
 
 
@@ -467,8 +537,10 @@ public abstract class RealmExpandableRecyclerAdapter<P extends Parent<C>, C exte
     @Override
     @UiThread
     public void onDetachedFromRecyclerView(@NonNull RecyclerView recyclerView) {
-        removeParentListener(parentList);
-        removeChildListeners();
+        if (isDataValid()) {
+            removeChildCollectionListeners();
+            removeParentCollectionListener(parentList);
+        }
     }
 
     @UiThread
@@ -558,7 +630,7 @@ public abstract class RealmExpandableRecyclerAdapter<P extends Parent<C>, C exte
         // add realm change listener to children
         P parent = parentWrapper.getParent();
         int parentPosition = parentList.indexOf(parent);
-        addChildListener(parentPosition);
+        addChildCollectionListener(parentPosition);
 
         if (expansionTriggeredByListItemClick && expandCollapseListener != null) {
             expandCollapseListener.onParentExpanded(getNearestParentPosition(flatParentPosition));
@@ -586,7 +658,7 @@ public abstract class RealmExpandableRecyclerAdapter<P extends Parent<C>, C exte
         // remove realm change listener from children
         P parent = parentWrapper.getParent();
         int parentPosition = parentList.indexOf(parent);
-        removeChildListener(parentPosition);
+        removeChildCollectionListener(parentPosition);
 
         List<ExpandableWrapper<P, C>> wrappedChildList = parentWrapper.getWrappedChildList();
         if (wrappedChildList != null) {
@@ -699,8 +771,8 @@ public abstract class RealmExpandableRecyclerAdapter<P extends Parent<C>, C exte
     private void generateParentWrapper(RealmList<ExpandableWrapper<P, C>> flatItemList, P parent, boolean shouldExpand, int index) {
         ExpandableWrapper<P, C> parentWrapper = new ExpandableWrapper<>(parent);
         flatItemList.add(parentWrapper);
+        addParentListener(parent, index);
         if (shouldExpand) {
-            addChildListener(index);
             generateExpandedChildren(flatItemList, parentWrapper);
         }
     }
@@ -709,8 +781,7 @@ public abstract class RealmExpandableRecyclerAdapter<P extends Parent<C>, C exte
         parentWrapper.setExpanded(true);
 
         RealmList<ExpandableWrapper<P, C>> wrappedChildList = parentWrapper.getWrappedChildList();
-        int childCount = wrappedChildList.size();
-        for (int j = 0; j < childCount; j++) {
+        for (int j = 0, size = wrappedChildList.size(); j < size; j++) {
             ExpandableWrapper<P, C> childWrapper = wrappedChildList.get(j);
             flatItemList.add(childWrapper);
         }

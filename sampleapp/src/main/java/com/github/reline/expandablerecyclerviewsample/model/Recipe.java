@@ -11,8 +11,9 @@ public class Recipe implements RealmModel, Parent<Ingredient> {
 
     @PrimaryKey
     private String name;
-    private RealmList<Ingredient> ingredients;
+    private RealmList<Ingredient> ingredients = new RealmList<>();
     private boolean expanded;
+    private boolean favorite;
 
     public Recipe() {
         // realm constructor
@@ -30,6 +31,21 @@ public class Recipe implements RealmModel, Parent<Ingredient> {
     @Override
     public RealmList<Ingredient> getChildList() {
         return ingredients;
+    }
+
+    public int getIngredientsCount() {
+        return ingredients.size();
+    }
+
+    public int getFavoritesCount() {
+        int count = 0;
+        for (int i = 0, size = ingredients.size(); i < size; i++) {
+            Ingredient ingredient = ingredients.get(i);
+            if (ingredient.isFavorite()) {
+                count++;
+            }
+        }
+        return count;
     }
 
     public void setExpanded(boolean expanded) {
@@ -52,5 +68,22 @@ public class Recipe implements RealmModel, Parent<Ingredient> {
             }
         }
         return true;
+    }
+
+    public boolean isFavorite() {
+        return favorite;
+    }
+
+    public void setFavorite(boolean favorite) {
+        for (int i = 0, size = ingredients.size(); i < size; i++) {
+            Ingredient ingredient = ingredients.get(i);
+            ingredient.setFavorite(favorite);
+        }
+        this.favorite = favorite;
+    }
+
+    @Override
+    public String toString() {
+        return "name = [" + name + "], favorite = [" + favorite + "]";
     }
 }
