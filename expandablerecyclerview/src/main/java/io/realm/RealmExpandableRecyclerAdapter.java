@@ -3,11 +3,10 @@ package io.realm;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.UiThread;
-import android.support.v4.util.SimpleArrayMap;
 import android.support.v7.widget.RecyclerView;
-import android.util.SparseArray;
 import android.view.ViewGroup;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import io.realm.model.Child;
@@ -33,8 +32,7 @@ public abstract class RealmExpandableRecyclerAdapter<P extends Parent<C>, C exte
     public static final int TYPE_CHILD = 1;
 
     private final OrderedRealmCollectionChangeListener parentCollectionListener;
-    private final SimpleArrayMap<RealmList<C>, OrderedRealmCollectionChangeListener<RealmList<C>>> childCollectionListeners = new SimpleArrayMap<>();
-    private final SparseArray<RealmObjectChangeListener<C>> childListeners = new SparseArray<>();
+    private final List<Triplet<RealmList<C>, OrderedRealmCollectionChangeListener<RealmList<C>>, List<RealmObjectChangeListener<C>>>> childCollectionListeners;
 
     /**
      * A {@link List} of all currently expanded parents and their children, in order.
@@ -87,6 +85,7 @@ public abstract class RealmExpandableRecyclerAdapter<P extends Parent<C>, C exte
             "for un-managed lists you can just use the RecyclerView.Adapter");
         }
         this.parentList = parentList;
+        childCollectionListeners = new ArrayList<>(parentList.size());
         flatItemList = generateFlattenedParentChildList(parentList);
         parentCollectionListener = createParentCollectionListener();
     }
@@ -131,35 +130,23 @@ public abstract class RealmExpandableRecyclerAdapter<P extends Parent<C>, C exte
         }
     }
 
-    private void addChildCollectionListener(int parentIndex) {
-        RealmList<C> data = parentList.get(parentIndex).getChildList();
-        OrderedRealmCollectionChangeListener<RealmList<C>> childListener = createChildCollectionListener(parentIndex);
-        childCollectionListeners.put(data, childListener);
-        data.addChangeListener(childListener);
-        for (int i = 0, size = data.size(); i < size; i++) {
-            C child = data.get(i);
-            addChildListener(child, parentIndex, i);
-        }
-    }
-
     private void addChildCollectionListeners() {
         for (int i = 0, size = parentList.size(); i < size; i++) {
             addChildCollectionListener(i);
         }
     }
 
-    private void removeChildCollectionListener(int parentIndex) {
-        RealmList<C> data = parentList.get(parentIndex).getChildList();
-        OrderedRealmCollectionChangeListener childListener = childCollectionListeners.valueAt(parentIndex);
-        // null check to allow safe listener refreshes
-        if (childListener != null) {
-            //noinspection unchecked
-            data.removeChangeListener(childListener);
-            childCollectionListeners.removeAt(parentIndex);
-            for (int i = 0, size = data.size(); i < size; i++) {
-                C child = data.get(i);
-                removeChildListener(child, parentIndex, i);
-            }
+    private void addChildCollectionListener(int parentPosition) {
+        RealmList<C> data = parentList.get(parentPosition).getChildList();
+        OrderedRealmCollectionChangeListener<RealmList<C>> childCollectionListener = createChildCollectionListener(parentPosition);
+        List<RealmObjectChangeListener<C>> childListeners = new ArrayList<>();
+        childCollectionListeners.add(parentPosition, new Triplet<>(data, childCollectionListener, childListeners));
+        data.addChangeListener(childCollectionListener);
+        for (int i = 0, size = data.size(); i < size; i++) {
+            C child = data.get(i);
+            RealmObjectChangeListener<C> childListener = createChildListener(parentPosition, i);
+            RealmObject.addChangeListener(child, childListener);
+            childListeners.add(childListener);
         }
     }
 
@@ -169,17 +156,8 @@ public abstract class RealmExpandableRecyclerAdapter<P extends Parent<C>, C exte
         }
     }
 
-    private void addChildListener(C child, int parentIndex, int childIndex) {
-        RealmObjectChangeListener<C> childListener = createChildListener(parentIndex, childIndex);
-        RealmObject.addChangeListener(child, childListener);
-        childListeners.put(getFlatParentPosition(parentIndex) + childIndex, childListener);
-    }
-
-    private void removeChildListener(C child, int parentIndex, int childIndex) {
-        int index = getFlatParentPosition(parentIndex) + childIndex;
-        RealmObjectChangeListener childListener = childListeners.get(index);
-        RealmObject.removeChangeListener(child, childListener);
-        childListeners.remove(index);
+    private void removeChildCollectionListener(int parentPosition) {
+        childCollectionListeners.remove(parentPosition);
     }
 
     private OrderedRealmCollectionChangeListener<OrderedRealmCollection<P>> createParentCollectionListener() {
@@ -244,21 +222,6 @@ public abstract class RealmExpandableRecyclerAdapter<P extends Parent<C>, C exte
                 for (OrderedCollectionChangeSet.Range range : insertions) {
                     notifyItemRangeInserted(flatStartPosition + range.startIndex, range.length);
                 }
-            }
-        };
-    }
-
-    private RealmObjectChangeListener<P> createParentListener(final int index) {
-        return new RealmObjectChangeListener<P>() {
-            @Override
-            public void onChange(P object, ObjectChangeSet changeSet) {
-                int flatPosition = getFlatParentPosition(index);
-                if (changeSet.isDeleted()) {
-                    notifyItemRemoved(flatPosition);
-                    removeChildCollectionListener(index);
-                    return;
-                }
-                notifyItemChanged(flatPosition);
             }
         };
     }
