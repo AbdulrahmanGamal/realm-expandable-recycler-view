@@ -6,7 +6,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
-import com.github.reline.expandablerecyclerviewsample.R;
+import com.gpsinsight.expandablerecyclerviewsample.R;
 import com.gpsinsight.expandablerecyclerviewsample.model.Ingredient;
 
 import io.realm.ChildViewHolder;

@@ -6,7 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.github.reline.expandablerecyclerviewsample.R;
+import com.gpsinsight.expandablerecyclerviewsample.R;
 import com.gpsinsight.expandablerecyclerviewsample.model.Ingredient;
 import com.gpsinsight.expandablerecyclerviewsample.model.Recipe;
 import com.gpsinsight.expandablerecyclerviewsample.recyclerview.viewholders.IngredientViewHolder;

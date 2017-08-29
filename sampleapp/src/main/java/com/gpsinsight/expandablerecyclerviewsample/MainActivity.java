@@ -8,7 +8,6 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.widget.Toast;
 
-import com.github.reline.expandablerecyclerviewsample.R;
 import com.gpsinsight.expandablerecyclerviewsample.model.Ingredient;
 import com.gpsinsight.expandablerecyclerviewsample.model.Recipe;
 import com.gpsinsight.expandablerecyclerviewsample.recyclerview.adapter.RecipeAdapter;
