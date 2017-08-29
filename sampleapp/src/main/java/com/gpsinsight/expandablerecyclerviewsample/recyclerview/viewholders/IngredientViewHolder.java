@@ -1,4 +1,4 @@
-package com.github.reline.expandablerecyclerviewsample.recyclerview.viewholders;
+package com.gpsinsight.expandablerecyclerviewsample.recyclerview.viewholders;
 
 import android.graphics.Color;
 import android.support.annotation.NonNull;
@@ -7,7 +7,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.github.reline.expandablerecyclerviewsample.R;
-import com.github.reline.expandablerecyclerviewsample.model.Ingredient;
+import com.gpsinsight.expandablerecyclerviewsample.model.Ingredient;
 
 import io.realm.ChildViewHolder;
 import io.realm.Realm;

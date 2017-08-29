@@ -14,7 +14,7 @@ If you have a bug fix or adding functionality without affecting current API, you
 
       The MIT License
       
-      Copyright (c) 2017 Nathan Reline
+      Copyright (c) 2017 GPS Insight
       
       Permission is hereby granted, free of charge, to any person obtaining a copy
       of this software and associated documentation files (the "Software"), to deal

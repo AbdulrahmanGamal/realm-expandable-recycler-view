@@ -1,4 +1,4 @@
-package com.github.reline.expandablerecyclerviewsample;
+package com.gpsinsight.expandablerecyclerviewsample;
 
 import android.os.Bundle;
 import android.support.annotation.UiThread;
@@ -8,9 +8,10 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.widget.Toast;
 
-import com.github.reline.expandablerecyclerviewsample.model.Ingredient;
-import com.github.reline.expandablerecyclerviewsample.model.Recipe;
-import com.github.reline.expandablerecyclerviewsample.recyclerview.adapter.RecipeAdapter;
+import com.github.reline.expandablerecyclerviewsample.R;
+import com.gpsinsight.expandablerecyclerviewsample.model.Ingredient;
+import com.gpsinsight.expandablerecyclerviewsample.model.Recipe;
+import com.gpsinsight.expandablerecyclerviewsample.recyclerview.adapter.RecipeAdapter;
 
 import java.util.Arrays;
 import java.util.List;

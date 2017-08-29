@@ -1,4 +1,4 @@
-package com.github.reline.expandablerecyclerviewsample.model;
+package com.gpsinsight.expandablerecyclerviewsample.model;
 
 import io.realm.RealmModel;
 import io.realm.annotations.PrimaryKey;

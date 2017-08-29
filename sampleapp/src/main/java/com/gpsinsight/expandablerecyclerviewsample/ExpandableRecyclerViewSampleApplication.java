@@ -1,4 +1,4 @@
-package com.github.reline.expandablerecyclerviewsample;
+package com.gpsinsight.expandablerecyclerviewsample;
 
 import android.app.Application;
 

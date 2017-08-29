@@ -6,8 +6,8 @@ android {
     buildToolsVersion "$BUILD_TOOLS_VERSION"
 
     defaultConfig {
-        applicationId "com.github.reline.expandablerecyclerviewsample"
-        minSdkVersion 9
+        applicationId "com.gpsinsight.expandablerecyclerviewsample"
+        minSdkVersion 14
         targetSdkVersion 25
         versionCode 1
         versionName "3.0"
